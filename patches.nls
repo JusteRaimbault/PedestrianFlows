@@ -1,0 +1,46 @@
+
+;;
+; patches
+
+
+
+
+to flood-fill [id]
+  ; based on dijkstra algorithm and netlogo "patch-tools"
+  ask patches with [item (item id direction) obstacle = 0] [set finished? false
+    ]
+   ask patches with [item (item id direction) obstacle = 1] [
+    set finished? true
+  ]
+   ask patches with [item id safe? = true] [
+    set shortest-path-min replace-item id shortest-path-min 0
+    set finished? true
+  ]
+  while [any? patches with [finished? = false and item (item id direction) obstacle = 0]] [
+
+  ask patches with [finished? = true and item (item id direction) obstacle = 0] [
+   let temp self
+    ask neighbors with [finished? != true and item (item id direction) obstacle = 0][
+     let distemp distance temp
+     let new (([item id shortest-path-min] of myself) + distemp / speed-patch)
+
+     if (new < item id shortest-path-min or item id shortest-path-min = 0)
+      [set shortest-path-min replace-item id shortest-path-min new]
+
+    if distemp = 1 [
+      set finished? true
+    ]
+    ]
+  ]
+
+  ]
+
+
+end
+
+
+
+
+to mark-safe-patch [id]
+  set safe? replace-item id safe? true
+end

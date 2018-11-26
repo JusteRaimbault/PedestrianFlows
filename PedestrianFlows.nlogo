@@ -1,16 +1,33 @@
+extensions [nw]
 
+__includes [
 
-turtles-own [
-  id-path
-  delay
-  goal ; useless???
+  "setup.nls"
+  "main.nls"
 
-  speed-max
-  speed-t
-  age
-  has-arrived?
-  count-interaction
+  "person.nls"
+  "patches.nls"
+
+  "indicators.nls"
+
+  "display.nls"
+
 ]
+
+
+
+globals [
+  repartition-among-paths
+  ;meanage
+  direction
+  max-speed-patch
+  path-mean-interaction ;
+  interaction-maxpatch ; compteur sortie : nombre d'interactions maximum sur un patch
+  interaction-meanpatch ; compteur sortie : nombre d'interactions moyenne sur un patch
+  path-time-mean
+  path-time-fast ; compteur sortie :
+]
+
 
 patches-own [
   shortest-path-min
@@ -25,16 +42,25 @@ patches-own [
   presence
 ]
 
-globals [
- repartition-among-paths
- ;meanage
- direction
- max-speed-patch
- path-mean-interaction ;
- interaction-maxpatch ; compteur sortie : nombre d'interactions maximum sur un patch
-  interaction-meanpatch ; compteur sortie : nombre d'interactions moyenne sur un patch
-path-time-mean
- path-time-fast ; compteur sortie :
+
+breed [persons person]
+
+persons-own [
+  id-path
+  delay
+  goal ; useless???
+
+  speed-max
+  speed-t
+  age
+  has-arrived?
+  count-interaction
+]
+
+
+breed [nodes node]
+
+nodes-own [
 ]
 
 
@@ -43,381 +69,16 @@ path-time-mean
 
 
 
-to draw
-  if mouse-down?  [
-    let p patch round mouse-xcor round mouse-ycor
 
-    ask  p [
-     if id-special = 1 [
 
-      if obstacleGreen? and not obstacleRed? [set obstacle [0 1]
-        set pcolor green + 3.5]
-      if obstacleRed? and not obstacleGreen? [set obstacle [1 0]
-        set pcolor red + 3.5]
-      if obstacleRed? and obstacleGreen? [set obstacle [1 1]
-        set pcolor black]
-      if not obstacleRed? and not obstacleGreen? [set obstacle [0 0]
-        set pcolor 9.2]
-      ;set obstacle 1
-      ]
-    ]
-  ]
 
-end
 
 
 
 
-to mark-safe [id]
-  if mouse-down? [
-    mark-safe-patch id patch round mouse-xcor round mouse-ycor
 
-  ]
-end
 
-to mark-safe-patch [id p]
 
-    ask p [
-      set safe? replace-item id safe? true
-
-    ]
-
-
-end
-
-to mark-safe-patches [id listp]
-
-    ask listp [
-     set safe? replace-item id safe? true
-    ]
-end
-
-to flood-fill [id]
-  ; based on dijkstra algorithm and netlogo "patch-tools"
-  ask patches with [item (item id direction) obstacle = 0] [set finished? false
-    ]
-   ask patches with [item (item id direction) obstacle = 1] [
-    set finished? true
-  ]
-   ask patches with [item id safe? = true] [
-    set shortest-path-min replace-item id shortest-path-min 0
-    set finished? true
-  ]
-  while [any? patches with [finished? = false and item (item id direction) obstacle = 0]] [
-
-  ask patches with [finished? = true and item (item id direction) obstacle = 0] [
-   let temp self
-    ask neighbors with [finished? != true and item (item id direction) obstacle = 0] [
-     let distemp distance temp
-     let new (([item id shortest-path-min] of myself) + distemp / speed-patch)
-
-     if (new < item id shortest-path-min or item id shortest-path-min = 0)
-      [set shortest-path-min replace-item id shortest-path-min new]
-
-    if distemp = 1 [
-      set finished? true
-    ]
-    ]
-  ]
-
-  ]
-
-
-end
-
-to color-patches-with-interaction
-  color-patches-with-environment
-  let maxI max [log (interaction + 1) 10] of patches
-  ask patches with [pcolor = 9.2] [set pcolor scale-color violet log (interaction + 1) 10  maxI 0]
-end
-to color-patches-with-presence
-  color-patches-with-environment
-  let maxP max [log (presence + 1) 10] of patches
-  ask patches with [pcolor = 9.2 or sum obstacle = 1] [set pcolor scale-color cyan log (presence + 1) 10  maxP 0]
-end
-
-
-
-to color-patches-with-shortest-path [id]
-  color-patches-with-environment
-  if id = -1 [stop]
-  let maxC max [item id shortest-path-t] of patches
-  let minC min [item id shortest-path-t] of patches
-
-  ask patches with [item (item id direction) obstacle = 0] [set pcolor scale-color yellow item id shortest-path-t maxC minC]
-  ask patches with [item (item id direction) obstacle = 1] [set pcolor black]
-end
-
-
-
-
-
-
-
-to setup-part1
-  clear-all
-  reset-ticks
-  setup-globals
-
-   ask patches [
-  set shortest-path-min [0 0 0 0 0 0 0 0 0 0]
-  set obstacle [0 0 0 0 0 0 0 0 0 0]
-  set safe? [false false false false false false false false false false] ; temporary
-   ]
-   import-image
-
-end
-
-
-to setup-part2
- setup-space
-  setup-turtles-simple
-
-end
-to setup-globals
-  set repartition-among-paths [0.143 0.214 0.285 0.428 0.571 0.714 0.785 0.856 0.927 1]
-  set direction [0 0 0 1 1 0 0 0 1 1]
-end
-
-to go
-
-  regrow-shortest-path
-
-  let i 0
-  ask turtles with [delay <= ticks] [
-    if hidden? = true and not has-arrived? [set hidden? false]
-    set i id-path
-     if [item i safe?] of patch-here [
-
-       set has-arrived? true
-       set hidden? true]
-     if not has-arrived? [
-     set age age + 1
-     ]
-  ]
-
-  ask turtles with [(can-play? (speed-t) ([speed-patch] of patch-here)) and delay <= ticks and not has-arrived?] [
-
-    downhill-shortest-path id-path
-    temporary-increase-shortest-path id-path
-  ]
-  ifelse count turtles with [not has-arrived?] > 0 [tick]
-  [;
-  ]
-  ask patches [
-    set presence presence + count turtles-here
-  ]
-end
-
-
-
-to-report can-play? [s sp]
-  let temp1 random-float ratio-speed-fast-slow
-  let temp2 random-float max-speed-patch
-
-  report temp1 < s and temp2 < sp
-end
-to import-image
-  import-pcolors input_image;"ligne4v8_modif3.bmp"
-  ask patches [set id-special 1]
-  ask patches with [pcolor = 0] [set obstacle [1 1]
-    set id-special 0]
-  if existing-obstacles [
-  ask patches with [pcolor = 4.5] [set obstacle [1 1]
-  ]
-  ask patches with [pcolor = 14.9] [set obstacle [1 0]
-]
-  ask patches with [pcolor = 105] [set obstacle [0 1]
-   ]
-  ]
-
-  ask patches with [pcolor = 44.9] [set id-special "A"]
-  ask patches with [pcolor = 126] [set id-special "B"]
-  ask patches with [pcolor = 118.1] [set id-special "C"]
-  ask patches with [pcolor = 12.9] [set id-special "D"]
-  ask patches with [pcolor = 64.3] [set id-special "E"]
-  ask patches with [pcolor = 35.6] [set id-special "F"]
-  ask patches with [pcolor = 44.3] [set id-special "G"]
-  ask patches with [pcolor = 137.1] [set id-special "H"]
-  ;id-special
-
-  ask patches [set speed-patch 1]
-   ask patches with [pcolor = 25.6] [set speed-patch 1.75]
-
-   ask patches with [pcolor = 106.5] [set speed-patch 0.75]
-
-  if existing-obstacles [
-   ask patches with [pcolor = 14.9] [set speed-patch speed-at-booth]
-   ask patches with [pcolor = 105] [set speed-patch speed-at-booth]
-  ]
-
-  color-patches-with-environment
-
-  set max-speed-patch max [speed-patch] of patches
-end
-
-
-to color-patches-with-environment
-  ask patches [set pcolor 9.2]
-
-  ask patches with [is-string? id-special] [set pcolor 3]
-  ask patches with [speed-patch > 1] [set pcolor white
-    set plabel-color black
-    set plabel "x"]
-  ask patches with [speed-patch < 1] [set pcolor white
-    set plabel-color black
-    set plabel "+"]
-   ask patches with [sum obstacle = 2] [set pcolor black]
-  ask patches with [obstacle = [1 0]] [set pcolor red + 3.5
-    set plabel ""]
-  ask patches with [obstacle = [0 1]] [set pcolor green + 3.5
-    set plabel ""]
-
-end
-
-to setup-space
-
-    mark-safe-patches 0 patches with [id-special = "C"]
-    flood-fill 0
-    mark-safe-patches 1 patches with [id-special = "F"]
-    flood-fill 1
-    mark-safe-patches 2 patches with [id-special = "F"]
-    flood-fill 2
-    mark-safe-patches 3 patches with [id-special = "H"]
-    flood-fill 3
-    mark-safe-patches 4 patches with [id-special = "A"]
-    flood-fill 4
-    mark-safe-patches 5 patches with [id-special = "C"]
-    flood-fill 5
-    mark-safe-patches 6 patches with [id-special = "F"]
-    flood-fill 6
-    mark-safe-patches 7 patches with [id-special = "C"]
-    flood-fill 7
-    mark-safe-patches 8 patches with [id-special = "A"]
-    flood-fill 8
-    mark-safe-patches 9 patches with [id-special = "H"]
-    flood-fill 9
-
-   ask patches [
-     set shortest-path-t shortest-path-min
-     ]
-
-end
-
-to setup-turtles-simple
-  create-turtles number-of-persons [
-    set hidden? true
-    set delay who * 10 / flow-rate-of-persons
-    let temp100 random-float 100
-    ifelse temp100 < percentage-slow-persons [
-      set speed-max 1
-      set shape "person slow"
-    ][
-    set speed-max ratio-speed-fast-slow
-    set shape "person"
-    ]
-    set speed-t speed-max
-    set has-arrived? false
-    let temp random-float 1
-    set id-path  position-in-list temp repartition-among-paths
-    set size (world-height + world-width) / 70
-
-
-  ]
-ask turtles with [id-path = 0] [
-  move-to one-of patches with [id-special = "G"]
-  set delay period-between-trains * random (number-of-persons * 10 / flow-rate-of-persons / period-between-trains); + delay mod period-between-trains
-  ]
-
-
-
-ask turtles with [id-path = 1] [
-  move-to one-of patches with [id-special = "G"]
-   set delay period-between-trains * random  (number-of-persons * 10 / flow-rate-of-persons / period-between-trains); + delay mod period-between-trains
-  ]
-ask turtles with [id-path = 2] [
-  move-to one-of patches with [id-special = "D"]]
-ask turtles with [id-path = 3] [
-  move-to one-of patches with [id-special = "D"]]
-ask turtles with [id-path = 4] [
-  move-to one-of patches with [id-special = "D"]]
-ask turtles with [id-path = 5] [
-  move-to one-of patches with [id-special = "B"]
-   set delay (period-between-trains / 2) + period-between-trains * random  (number-of-persons * 10 / flow-rate-of-persons / period-between-trains); + delay mod period-between-trains
-  ]
-ask turtles with [id-path = 6] [
-  move-to one-of patches with [id-special = "B"]
-   set delay (period-between-trains / 2) + period-between-trains * random  (number-of-persons * 10 / flow-rate-of-persons / period-between-trains); + delay mod period-between-trains
-  ]
-ask turtles with [id-path = 7] [
-  move-to one-of patches with [id-special = "E"]]
-ask turtles with [id-path = 8] [
-  move-to one-of patches with [id-special = "E"]]
-ask turtles with [id-path = 9] [
-  move-to one-of patches with [id-special = "E"]]
-color-turtles -1
-end
-
-to-report mean-age [id t]
-ifelse t = "slow" [
-  ifelse id = -1
-  [
-    if any? turtles with [has-arrived? = true and speed-t = 1] [  report mean [age] of turtles with [has-arrived? = true and speed-t = 1]]
-  ]
-  [
-   if any? turtles with [has-arrived? = true and speed-t = 1 and id-path = id] [ report mean [age] of turtles with [has-arrived? = true and speed-t = 1 and id-path = id]]
-  ]
-]
-[
-    ifelse id = -1
-  [
-  if any? turtles with [has-arrived? = true and speed-t > 1] [ report mean [age] of turtles with [has-arrived? = true and speed-t > 1]]
-  ]
-  [
-   if any? turtles with [has-arrived? = true and speed-t > 1  and id-path = id] [ report mean [age] of turtles with [has-arrived? = true and speed-t > 1 and id-path = id]]
-  ]
-]
-report 0
-end
-
-to-report mean-interaction [id t]
-ifelse t = "slow" [
-  ifelse id = -1
-  [
-  if any? turtles with [has-arrived? = true and speed-t = 1] [ report mean [count-interaction / age] of turtles with [has-arrived? = true and speed-t = 1]]
-  ]
-  [
-   if any? turtles with [has-arrived? = true and speed-t = 1 and id-path = id] [ report mean [count-interaction / age] of turtles with [has-arrived? = true and speed-t = 1 and id-path = id]]
-  ]
-]
-[
-    ifelse id = -1
-  [
-  if any? turtles with [has-arrived? = true and speed-t > 1] [ report mean [count-interaction / age] of turtles with [has-arrived? = true and speed-t > 1]]
-  ]
-  [
-   if any? turtles with [has-arrived? = true and speed-t > 1 and id-path = id] [ report mean [count-interaction / age] of turtles with [has-arrived? = true and speed-t > 1 and id-path = id]]
-  ]
-]
-report 0
-end
-
-
-
-to color-turtles [id]
-
-  ask turtles with [id-path = 0] [set color green]
-  ask turtles with [id-path = 1] [set color green]
-  ask turtles with [id-path = 2] [set color red]
-  ask turtles with [id-path = 3] [set color red]
-  ask turtles with [id-path = 4] [set color red]
-  ask turtles with [id-path = 5] [set color green]
-  ask turtles with [id-path = 6] [set color green]
-  ask turtles with [id-path = 7] [set color red]
-  ask turtles with [id-path = 8] [set color red]
-  ask turtles with [id-path = 9] [set color red]
-  ask turtles with [id-path = id] [set color blue]
-end
 
 to-report position-in-list [tempR repartition-among-pathsR]
   let i 0
@@ -430,127 +91,10 @@ to-report position-in-list [tempR repartition-among-pathsR]
   report 0
 end
 
-to downhill-shortest-path [id]
-
-    let tempI 0
-    ;move-to max-one-of patches in-cone 1 180 [item id shortest-path-t]
-    let temp min-one-of neighbors with [item (item id direction) obstacle = 0] [item id shortest-path-t]
-    let ok? true
-    ask temp [
-      if item (item id direction) obstacle > 0 [set ok? false]
-    if count turtles-here  with [delay <= ticks and not has-arrived?] > 0 [;?
-      set ok? false
-      set interaction interaction + 1
-      set tempI 1
-     ;
-      ]
-    ]
-    ifelse ok? [
-      set heading towards temp
-      move-to temp]
-    [
-       let temp2 min-one-of neighbors with [item (item id direction) obstacle = 0 and pxcor != [pxcor] of temp and pycor != [pycor] of temp] [item id shortest-path-t]
-    let ok?2 true
-    if is-patch? temp2 [ask temp2 [
-      if item (item id direction) obstacle > 0 [set ok? false]
-    if count turtles-here with [delay <= ticks and has-arrived? = false] > 0 [
-    ;  set interaction interaction + 1
-     ; set tempI 1
-      set ok? false]
-    ]
-    if ok?2 [
-      set heading towards temp2
-      move-to temp2
-      ]]
-
-      if not ok?2 [if any? neighbors with [item (item id direction) obstacle = 0 and turtles-here with [delay <= ticks and has-arrived? = false] = 0] [
-        move-to one-of neighbors with [item (item id direction) obstacle = 0 and turtles-here with [delay <= ticks and has-arrived? = false] = 0]
-      ]
-    ]
-    ]
-    set count-interaction count-interaction + tempI
-
-end
-
-
-to temporary-increase-shortest-path [id]
-  let i 0
-  if [sum obstacle] of patch-here = 1 [
-    set heading heading + 180
-   if is-patch? patch-ahead radius  [
-     fd radius
-   ask patches in-radius radius  [
-    set i 0
-    while [i < length repartition-among-paths]
-    [
-    if i != id [
-      set shortest-path-t replace-item i shortest-path-t min list (item i shortest-path-min + 3 * intensity) (item i shortest-path-t + intensity); (max [(item i shortest-path-t + intensity), (item i shortest-path-min + 2 * intensity)])
-    ]
-    set i i + 1
-    ]
-  ]
-  fd -1 * radius
-   ]
-   set heading heading + 180
-  ]
-   ask patch-here [
-
-      set shortest-path-t replace-item id shortest-path-t min list (item id shortest-path-min + 3 * intensity) (item id shortest-path-t + intensity); (max [(item i shortest-path-t + intensity), (item i shortest-path-min + 2 * intensity)])
-]
-
-   if is-patch? patch-ahead radius  [
-     fd radius
-   ask patches in-radius radius  [
-    set i 0
-    while [i < length repartition-among-paths]
-    [
-    if i != id [
-      set shortest-path-t replace-item i shortest-path-t min list (item i shortest-path-min + 3 * intensity) (item i shortest-path-t + intensity); (max [(item i shortest-path-t + intensity), (item i shortest-path-min + 2 * intensity)])
-    ]
-    set i i + 1
-    ]
-  ]
-  fd -1 * radius
-   ]
-end
-
-
-to reportGlobals
-  let i 0
-   set path-mean-interaction []
-    while [i < length repartition-among-paths]
-    [
-      set  path-mean-interaction lput mean-interaction i "fast" path-mean-interaction
-    set i i + 1
-    ]
-
-    set i 0
-   set path-time-fast []
-    while [i < length repartition-among-paths]
-    [
-      set  path-time-fast lput mean-age i "fast" path-time-fast
-    set i i + 1
-    ]
-       set interaction-meanpatch  sum [interaction] of patches / count turtles with [ticks >= delay]
- set path-time-mean mean [age] of turtles
- set interaction-maxpatch  max [interaction] of patches
-end
 
 
 
-to regrow-shortest-path
-  ask patches [
-    let i 0
-    while [i < length repartition-among-paths]
-    [
-      if item i shortest-path-t != item i shortest-path-min [
-      set shortest-path-t replace-item i shortest-path-t max list (item i shortest-path-min) (item i shortest-path-t - regrow-speed)
-    ]
-    set i i + 1
-    ]
 
-  ]
-end
 @#$#@#$#@
 GRAPHICS-WINDOW
 8
@@ -580,12 +124,12 @@ ticks
 30.0
 
 BUTTON
-186
-433
-284
-467
+126
+432
+246
+466
 NIL
-setup-part1
+setup-environment
 NIL
 1
 T
@@ -667,7 +211,7 @@ path-number
 path-number
 0
 10
-0
+1
 1
 1
 NIL
@@ -676,10 +220,10 @@ HORIZONTAL
 BUTTON
 463
 431
-566
+577
 466
 NIL
-setup-part2
+setup-agents
 NIL
 1
 T
@@ -696,24 +240,7 @@ BUTTON
 1215
 92
 color-patches-with-shortest-path
-color-patches-with-shortest-path path-number - 1\ncolor-turtles path-number - 1
-T
-1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
-1
-
-BUTTON
-83
-435
-174
-469
-NIL
-ca\n
+color-patches-with-shortest-path path-number - 1\ncolor-persons path-number - 1
 NIL
 1
 T
@@ -869,7 +396,7 @@ SWITCH
 527
 obstacleGreen?
 obstacleGreen?
-1
+0
 1
 -1000
 
@@ -880,17 +407,6 @@ SWITCH
 565
 obstacleRed?
 obstacleRed?
-1
-1
--1000
-
-SWITCH
-110
-482
-267
-515
-existing-obstacles
-existing-obstacles
 0
 1
 -1000
@@ -1098,6 +614,17 @@ input_image
 "ligne4v8.bmp" "ligne4v8_modif1.bmp"
 0
 
+SWITCH
+121
+481
+293
+514
+existing-obstacles
+existing-obstacles
+0
+1
+-1000
+
 @#$#@#$#@
 ## WHAT IS IT?
 
@@ -1105,7 +632,7 @@ input_image
 
 ## HOW IT WORKS
 
-(what rules the agents use to create the overall behavior of the model)
+Field-based pedestrian model
 
 ## HOW TO USE IT
 
@@ -1115,7 +642,6 @@ setup-part1
 setup-part2
 go
 
-(how to use the model, including a description of each of the items in the Interface tab)
 
 ## THINGS TO NOTICE
 
@@ -1129,19 +655,14 @@ go
 
 (suggested things to add or change in the Code tab to make the model more complicated, detailed, accurate, etc.)
 
-## NETLOGO FEATURES
-
-(interesting or unusual features of NetLogo that the model uses, particularly in the Code tab; or where workarounds were needed for missing features)
-
-## RELATED MODELS
-
-(models in the NetLogo Models Library and elsewhere which are of related interest)
 
 ## CREDITS AND REFERENCES
 
-(a reference to the model's URL on the web if it has one, as well as any other necessary credits, citations, and links)
-LE NECHET 2015
+Le Nechet 2015
 Université Paris Est
+
+Raimbault, 2018
+ISC-PIF
 @#$#@#$#@
 default
 true

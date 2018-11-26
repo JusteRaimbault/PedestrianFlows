@@ -1,0 +1,106 @@
+
+;;
+; display
+
+
+
+
+to draw
+  if mouse-down?  [
+    let p patch round mouse-xcor round mouse-ycor
+
+    ask  p [
+     if id-special = 1 [
+
+      if obstacleGreen? and not obstacleRed? [set obstacle [0 1]
+        set pcolor green + 3.5]
+      if obstacleRed? and not obstacleGreen? [set obstacle [1 0]
+        set pcolor red + 3.5]
+      if obstacleRed? and obstacleGreen? [set obstacle [1 1]
+        set pcolor black]
+      if not obstacleRed? and not obstacleGreen? [set obstacle [0 0]
+        set pcolor 9.2]
+      ;set obstacle 1
+      ]
+    ]
+  ]
+
+end
+
+
+
+
+to mark-safe [id]
+  if mouse-down? [
+    ask patch round mouse-xcor round mouse-ycor [
+      mark-safe-patch id
+    ]
+  ]
+end
+
+
+to color-patches-with-interaction
+  color-patches-with-environment
+  let maxI max [log (interaction + 1) 10] of patches
+  ask patches with [pcolor = 9.2] [set pcolor scale-color violet log (interaction + 1) 10  maxI 0]
+end
+
+to color-patches-with-presence
+  color-patches-with-environment
+  let maxP max [log (presence + 1) 10] of patches
+  ask patches with [pcolor = 9.2 or sum obstacle = 1] [set pcolor scale-color cyan log (presence + 1) 10  maxP 0]
+end
+
+
+
+to color-patches-with-shortest-path [id]
+  color-patches-with-environment
+  if id = -1 [stop]
+  let maxC max [item id shortest-path-t] of patches
+  let minC min [item id shortest-path-t] of patches
+
+  ask patches with [item (item id direction) obstacle = 0] [set pcolor scale-color yellow item id shortest-path-t maxC minC]
+  ask patches with [item (item id direction) obstacle = 1] [set pcolor black]
+end
+
+
+
+to color-patches-with-environment
+  ask patches [set pcolor 9.2]
+
+  ask patches with [is-string? id-special] [set pcolor 3]
+  ask patches with [speed-patch > 1] [set pcolor white
+    set plabel-color black
+    set plabel "x"]
+  ask patches with [speed-patch < 1] [set pcolor white
+    set plabel-color black
+    set plabel "+"]
+   ask patches with [sum obstacle = 2] [set pcolor black]
+  ask patches with [obstacle = [1 0]] [set pcolor red + 3.5
+    set plabel ""]
+  ask patches with [obstacle = [0 1]] [set pcolor green + 3.5
+    set plabel ""]
+
+end
+
+
+
+
+
+
+;;
+; mapping between paths and turtle colors
+to color-persons [id]
+
+  ask persons with [id-path = 0] [set color green]
+  ask persons with [id-path = 1] [set color green]
+  ask persons with [id-path = 2] [set color red]
+  ask persons with [id-path = 3] [set color red]
+  ask persons with [id-path = 4] [set color red]
+  ask persons with [id-path = 5] [set color green]
+  ask persons with [id-path = 6] [set color green]
+  ask persons with [id-path = 7] [set color red]
+  ask persons with [id-path = 8] [set color red]
+  ask persons with [id-path = 9] [set color red]
+  ask persons with [id-path = id] [set color blue]
+end
