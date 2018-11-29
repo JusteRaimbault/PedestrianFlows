@@ -5,7 +5,7 @@
 
 
 
-to draw
+to display:draw
   if mouse-down?  [
     let p patch round mouse-xcor round mouse-ycor
 
@@ -30,31 +30,31 @@ end
 
 
 
-to mark-safe [id]
+to display:mark-safe [id]
   if mouse-down? [
     ask patch round mouse-xcor round mouse-ycor [
-      mark-safe-patch id
+      patch:mark-safe-patch id
     ]
   ]
 end
 
 
-to color-patches-with-interaction
-  color-patches-with-environment
+to display:color-patches-with-interaction
+  display:color-patches-with-environment
   let maxI max [log (interaction + 1) 10] of patches
   ask patches with [pcolor = 9.2] [set pcolor scale-color violet log (interaction + 1) 10  maxI 0]
 end
 
-to color-patches-with-presence
-  color-patches-with-environment
+to display:color-patches-with-presence
+  display:color-patches-with-environment
   let maxP max [log (presence + 1) 10] of patches
   ask patches with [pcolor = 9.2 or sum obstacle = 1] [set pcolor scale-color cyan log (presence + 1) 10  maxP 0]
 end
 
 
 
-to color-patches-with-shortest-path [id]
-  color-patches-with-environment
+to display:color-patches-with-shortest-path [id]
+  display:color-patches-with-environment
   if id = -1 [stop]
   let maxC max [item id shortest-path-t] of patches
   let minC min [item id shortest-path-t] of patches
@@ -65,7 +65,7 @@ end
 
 
 
-to color-patches-with-environment
+to display:color-patches-with-environment
   ask patches [set pcolor 9.2]
 
   ask patches with [is-string? id-special] [set pcolor 3]
@@ -90,7 +90,7 @@ end
 
 ;;
 ; mapping between paths and turtle colors
-to color-persons [id]
+to display:color-persons [id]
 
   ask persons with [id-path = 0] [set color green]
   ask persons with [id-path = 1] [set color green]

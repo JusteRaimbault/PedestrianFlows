@@ -10,6 +10,8 @@ __includes [
 
   "indicators.nls"
 
+  "utils.nls"
+
   "display.nls"
 
 ]
@@ -64,37 +66,6 @@ nodes-own [
 ]
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-to-report position-in-list [tempR repartition-among-pathsR]
-  let i 0
-  while [i < length repartition-among-pathsR] [
-   if tempR < item i repartition-among-pathsR [
-     report i
-   ]
-   set i i + 1
-  ]
-  report 0
-end
-
-
-
-
-
 @#$#@#$#@
 GRAPHICS-WINDOW
 8
@@ -126,10 +97,10 @@ ticks
 BUTTON
 126
 432
-246
+254
 466
-NIL
-setup-environment
+Setup environment
+setup:setup-environment
 NIL
 1
 T
@@ -145,8 +116,8 @@ BUTTON
 483
 590
 561
-NIL
 go
+main:go
 T
 1
 T
@@ -163,7 +134,7 @@ BUTTON
 218
 621
 mark-safe
-mark-safe path-number - 1
+display:mark-safe path-number - 1
 T
 1
 T
@@ -175,12 +146,12 @@ NIL
 1
 
 BUTTON
-304
-435
-440
-489
-NIL
+302
+422
+438
+476
 draw
+display:draw
 T
 1
 T
@@ -222,8 +193,8 @@ BUTTON
 431
 577
 466
-NIL
-setup-agents
+Setup agents
+setup:setup-agents
 NIL
 1
 T
@@ -240,7 +211,7 @@ BUTTON
 1215
 92
 color-patches-with-shortest-path
-color-patches-with-shortest-path path-number - 1\ncolor-persons path-number - 1
+display:color-patches-with-shortest-path path-number - 1\ndisplay:color-persons path-number - 1
 NIL
 1
 T
@@ -312,12 +283,12 @@ NIL
 HORIZONTAL
 
 BUTTON
-829
-402
-1027
-436
-NIL
+824
+401
+1024
+435
 color-patches-with-interaction
+display:color-patches-with-interaction
 NIL
 1
 T
@@ -334,7 +305,7 @@ MONITOR
 1250
 532
 Path average time for slow persons
-mean-age (path-number - 1) \"slow\"
+indicators:mean-age (path-number - 1) \"slow\"
 1
 1
 11
@@ -473,7 +444,7 @@ MONITOR
 1247
 482
 Path average time for fast persons
-mean-age (path-number - 1) \"fast\"
+indicators:mean-age (path-number - 1) \"fast\"
 1
 1
 11
@@ -484,7 +455,7 @@ MONITOR
 1363
 585
 Path interactions counted per time unit for fast persons
-mean-interaction (path-number - 1) \"fast\"
+indicators:mean-interaction (path-number - 1) \"fast\"
 2
 1
 11
@@ -495,7 +466,7 @@ MONITOR
 1365
 638
 Path interactions counter per time unit for slow persons
-mean-interaction (path-number - 1) \"slow\"
+indicators:mean-interaction (path-number - 1) \"slow\"
 2
 1
 11
@@ -536,16 +507,16 @@ true
 true
 "" ""
 PENS
-"path1" 1.0 0 -13840069 true "" "plotxy ticks mean-age (0) \"fast\""
-"path2" 1.0 0 -13840069 true "" "plotxy ticks mean-age (1) \"fast\""
-"path3" 1.0 0 -7500403 true "" "plotxy ticks mean-age (2) \"fast\""
-"path4" 1.0 0 -2674135 true "" "plotxy ticks mean-age (3) \"fast\""
-"path5" 1.0 0 -2674135 true "" "plotxy ticks mean-age (4) \"fast\""
-"path6" 1.0 0 -13840069 true "" "plotxy ticks mean-age (5) \"fast\""
-"path7" 1.0 0 -13840069 true "" "plotxy ticks mean-age (6) \"fast\""
-"path8" 1.0 0 -7500403 true "" "plotxy ticks mean-age (7) \"fast\""
-"path9" 1.0 0 -2674135 true "" "plotxy ticks mean-age (8) \"fast\""
-"path10" 1.0 0 -2674135 true "" "plotxy ticks mean-age (9) \"fast\""
+"path1" 1.0 0 -13840069 true "" "plotxy ticks indicators:mean-age (0) \"fast\""
+"path2" 1.0 0 -13840069 true "" "plotxy ticks indicators:mean-age (1) \"fast\""
+"path3" 1.0 0 -7500403 true "" "plotxy ticks indicators:mean-age (2) \"fast\""
+"path4" 1.0 0 -2674135 true "" "plotxy ticks indicators:mean-age (3) \"fast\""
+"path5" 1.0 0 -2674135 true "" "plotxy ticks indicators:mean-age (4) \"fast\""
+"path6" 1.0 0 -13840069 true "" "plotxy ticks indicators:mean-age (5) \"fast\""
+"path7" 1.0 0 -13840069 true "" "plotxy ticks indicators:mean-age (6) \"fast\""
+"path8" 1.0 0 -7500403 true "" "plotxy ticks indicators:mean-age (7) \"fast\""
+"path9" 1.0 0 -2674135 true "" "plotxy ticks indicators:mean-age (8) \"fast\""
+"path10" 1.0 0 -2674135 true "" "plotxy ticks indicators:mean-age (9) \"fast\""
 
 TEXTBOX
 1043
@@ -575,10 +546,10 @@ HORIZONTAL
 BUTTON
 824
 362
-1013
+1024
 395
-NIL
 color-patches-with-presence
+display:color-patches-with-presence
 NIL
 1
 T
@@ -994,10 +965,10 @@ NetLogo 5.3.1
 <experiments>
   <experiment name="experiment" repetitions="15" runMetricsEveryStep="false">
     <setup>ca
-setup-part1
-setup-part2</setup>
-    <go>go
-reportGlobals</go>
+setup:setup-environment
+setup:setup-agents</setup>
+    <go>main:go
+indicators:reportGlobals</go>
     <timeLimit steps="10000"/>
     <exitCondition>count turtles with [has-arrived? = false] = 0</exitCondition>
     <metric>path-time-mean</metric>

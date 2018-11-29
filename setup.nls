@@ -5,22 +5,22 @@
 
 ;;
 ;
-to setup-environment
+to setup:setup-environment
   clear-all
   reset-ticks
-  setup-globals
+  setup:setup-globals
 
    ask patches [
      set shortest-path-min [0 0 0 0 0 0 0 0 0 0]
      set obstacle [0 0 0 0 0 0 0 0 0 0]
      set safe? [false false false false false false false false false false] ; temporary
    ]
-   import-image
+   setup:import-image
 
 end
 
 
-to import-image
+to setup:import-image
   import-pcolors (word "setup/" input_image);"ligne4v8_modif3.bmp"
   ask patches [set id-special 1]
   
@@ -62,7 +62,7 @@ to import-image
     ask patches with [pcolor = 105] [set speed-patch speed-at-booth]
   ]
 
-  color-patches-with-environment
+  display:color-patches-with-environment
 
   set max-speed-patch max [speed-patch] of patches
 end
@@ -70,7 +70,7 @@ end
 
 ;;
 ; 
-to setup-globals
+to setup:setup-globals
   set repartition-among-paths [0.143 0.214 0.285 0.428 0.571 0.714 0.785 0.856 0.927 1]
   set direction [0 0 0 1 1 0 0 0 1 1]
 end
@@ -78,9 +78,9 @@ end
 
 ;;
 ; setup for shortest paths and persons
-to setup-agents
-  setup-space
-  setup-persons-simple
+to setup:setup-agents
+  setup:setup-space
+  setup:setup-persons-simple
 end
 
 
@@ -90,42 +90,45 @@ end
 
 ;;
 ; setup shortest paths
-to setup-space
+to setup:setup-space
 
    ;; add a "connexification procedure" to ensure flood-fill procedures do not enter an infinite loop
    ;  -> heuristic : keep largest connected component
-   keep-largest-connected-component
+   setup:keep-largest-connected-component [1 1]
+   setup:keep-largest-connected-component [0 1]
+   setup:keep-largest-connected-component [1 0]
 
-   ask patches with [id-special = "C"][mark-safe-patch 0]
-   flood-fill 0
-   ask patches with [id-special = "F"][mark-safe-patch 1]
-   flood-fill 1
-   ask patches with [id-special = "F"][mark-safe-patch 2]
-   flood-fill 2
-   ask patches with [id-special = "H"][mark-safe-patch 3]
-   flood-fill 3
-   ask patches with [id-special = "A"][mark-safe-patch 4]
-   flood-fill 4
-   ask patches with [id-special = "C"][mark-safe-patch 5]
-   flood-fill 5
-   ask patches with [id-special = "F"][mark-safe-patch 6]
-   flood-fill 6
-   ask patches with [id-special = "C"][mark-safe-patch 7]
-   flood-fill 7
-   ask patches with [id-special = "A"][mark-safe-patch 8]
-   flood-fill 8
-   ask patches with [id-special = "H"][mark-safe-patch 9]
-   flood-fill 9
+   ask patches with [id-special = "C"][patch:mark-safe-patch 0]
+   patches:flood-fill 0
+   ask patches with [id-special = "F"][patch:mark-safe-patch 1]
+   patches:flood-fill 1
+   ask patches with [id-special = "F"][patch:mark-safe-patch 2]
+   patches:flood-fill 2
+   ask patches with [id-special = "H"][patch:mark-safe-patch 3]
+   patches:flood-fill 3
+   ask patches with [id-special = "A"][patch:mark-safe-patch 4]
+   patches:flood-fill 4
+   ask patches with [id-special = "C"][patch:mark-safe-patch 5]
+   patches:flood-fill 5
+   ask patches with [id-special = "F"][patch:mark-safe-patch 6]
+   patches:flood-fill 6
+   ask patches with [id-special = "C"][patch:mark-safe-patch 7]
+   patches:flood-fill 7
+   ask patches with [id-special = "A"][patch:mark-safe-patch 8]
+   patches:flood-fill 8
+   ask patches with [id-special = "H"][patch:mark-safe-patch 9]
+   patches:flood-fill 9
 
    ask patches [
      set shortest-path-t shortest-path-min
    ]
 end
 
+
 ;;
-;
-to keep-largest-connected-component
-  ask patches with [obstacle != [1 1]][sprout-nodes 1 [set hidden? true]]
+; fill with obstacle possible smaller isolated components
+to setup:keep-largest-connected-component [obstacle-type]
+  ask patches with [obstacle != [1 1] and obstacle != obstacle-type][sprout-nodes 1 [set hidden? true]]
   ask nodes [create-links-with (other nodes in-radius 1.4) with [not link-neighbor? myself]]
   nw:set-context nodes links
   foreach but-first (sort-by [count ?1 > count ?2] nw:weak-component-clusters) [
@@ -133,15 +136,15 @@ to keep-largest-connected-component
       ask patch-here [
         ; fail if an entrance was blocked
         if not is-number? id-special [error "Obstacle configuration does not allow a single connected component including all input/output patches"]
-        set obstacle [1 1]
+        set obstacle obstacle-type
       ]
     ]
   ]
   ask links [die] ask nodes [die]
-  color-patches-with-environment
+  display:color-patches-with-environment
 end
 
-to setup-persons-simple
+to setup:setup-persons-simple
   create-persons number-of-persons [
     set hidden? true
     set delay who * 10 / flow-rate-of-persons
@@ -156,7 +159,7 @@ to setup-persons-simple
     set speed-t speed-max
     set has-arrived? false
     let temp random-float 1
-    set id-path  position-in-list temp repartition-among-paths
+    set id-path utils:position-in-list temp repartition-among-paths
     set size (world-height + world-width) / 70
 
 
@@ -192,7 +195,7 @@ ask persons with [id-path = 8] [
   move-to one-of patches with [id-special = "E"]]
 ask persons with [id-path = 9] [
   move-to one-of patches with [id-special = "E"]]
-color-persons -1
+  display:color-persons -1
 end
 
 

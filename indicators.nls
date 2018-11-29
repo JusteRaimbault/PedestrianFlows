@@ -5,12 +5,12 @@
 
 
 
-to reportGlobals
+to indicators:reportGlobals
   let i 0
    set path-mean-interaction []
     while [i < length repartition-among-paths]
     [
-      set  path-mean-interaction lput mean-interaction i "fast" path-mean-interaction
+      set  path-mean-interaction lput indicators:mean-interaction i "fast" path-mean-interaction
     set i i + 1
     ]
 
@@ -18,7 +18,7 @@ to reportGlobals
    set path-time-fast []
     while [i < length repartition-among-paths]
     [
-      set  path-time-fast lput mean-age i "fast" path-time-fast
+      set  path-time-fast lput indicators:mean-age i "fast" path-time-fast
     set i i + 1
     ]
        set interaction-meanpatch  sum [interaction] of patches / count persons with [ticks >= delay]
@@ -30,7 +30,7 @@ end
 
 ;;
 ; mean age for the path id and the type t
-to-report mean-age [id t]
+to-report indicators:mean-age [id t]
 ifelse t = "slow" [
   ifelse id = -1
   [
@@ -52,7 +52,7 @@ ifelse t = "slow" [
 report 0
 end
 
-to-report mean-interaction [id t]
+to-report indicators:mean-interaction [id t]
 ifelse t = "slow" [
   ifelse id = -1
   [

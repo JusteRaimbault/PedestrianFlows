@@ -3,8 +3,9 @@
 ; persons
 
 
-
-to-report can-play? [s sp]
+;;
+; 
+to-report person:can-play? [s sp]
   let temp1 random-float ratio-speed-fast-slow
   let temp2 random-float max-speed-patch
 
@@ -17,45 +18,59 @@ end
 ; core persons procedure : follow the gradient of the shortest path associated to the turtle
 ;   - test noise in mvt
 ;   - todo add the presence of walls in the guiding field (or add redirection in agents ?)
-to downhill-shortest-path [id]
+to person:downhill-shortest-path [id]
 
     let tempI 0
     ;move-to max-one-of patches in-cone 1 180 [item id shortest-path-t]
+    ; potential position : gradient descent following shortest-path-t, for patches which are not an obstacle for the persons' direction (0 or 1)
     let temp min-one-of neighbors with [item (item id direction) obstacle = 0] [item id shortest-path-t]
+    
     let ok? true
+    
     ask temp [
       if item (item id direction) obstacle > 0 [set ok? false]
-      if count persons-here  with [delay <= ticks and not has-arrived?] > 0 [;?
-      set ok? false
-      set interaction interaction + 1
-      set tempI 1
-     ;
+      if count persons-here  with [delay <= ticks and not has-arrived?] > 0 [
+        ; if people occupy the potential destination, change behavior
+        set ok? false
+        set interaction interaction + 1
+        set tempI 1
       ]
     ]
+    
     ifelse ok? [
+      ; move to the potential destination if not occupied
       set heading towards temp
       move-to temp
     ][
+      ; otherwise select a new destination: second best
        let temp2 min-one-of neighbors with [item (item id direction) obstacle = 0 and pxcor != [pxcor] of temp and pycor != [pycor] of temp] [item id shortest-path-t]
-    let ok?2 true
-    if is-patch? temp2 [ask temp2 [
-      if item (item id direction) obstacle > 0 [set ok? false]
-    if count persons-here with [delay <= ticks and has-arrived? = false] > 0 [
-    ;  set interaction interaction + 1
-     ; set tempI 1
-      set ok? false]
-    ]
-    if ok?2 [
-      set heading towards temp2
-      move-to temp2
-      ]]
+       let ok?2 true
+       if is-patch? temp2 [ ; if the second best exists
+         ask temp2 [
+           if item (item id direction) obstacle > 0 [set ok? false]
+           if count persons-here with [delay <= ticks and has-arrived? = false] > 0 [
+             ;  set interaction interaction + 1
+             ; why do we not increase the interactions for the second best ? -> avoid overestimation ?
+             ; set tempI 1
+             set ok? false
+           ]
+         ]
+        if ok?2 [
+          ; move to second best if possible
+          set heading towards temp2
+          move-to temp2
+        ]
+      ]
 
       if not ok?2 [
+        ; otherwise move to any neighbor if possible
         if any? neighbors with [item (item id direction) obstacle = 0 and persons-here with [delay <= ticks and has-arrived? = false] = 0] [
-        move-to one-of neighbors with [item (item id direction) obstacle = 0 and persons-here with [delay <= ticks and has-arrived? = false] = 0]
+          move-to one-of neighbors with [item (item id direction) obstacle = 0 and persons-here with [delay <= ticks and has-arrived? = false] = 0]
+        ]
       ]
     ]
-    ]
+    
+    ; cumulated interactions
     set count-interaction count-interaction + tempI
 
 end
@@ -63,46 +78,49 @@ end
 
 
 ;;
-; person procedure (to deal with density ?)
-to temporary-increase-shortest-path [id]
-  let i 0
+; person procedure to deal with density
+to person:temporary-increase-shortest-path [id]
+  
   if [sum obstacle] of patch-here = 1 [
+    ; turn back if step on an obstacle
     set heading heading + 180
-   if is-patch? patch-ahead radius  [
-     fd radius
-   ask patches in-radius radius  [
-    set i 0
-    while [i < length repartition-among-paths]
-    [
-    if i != id [
-      set shortest-path-t replace-item i shortest-path-t min list (item i shortest-path-min + 3 * intensity) (item i shortest-path-t + intensity); (max [(item i shortest-path-t + intensity), (item i shortest-path-min + 2 * intensity)])
-    ]
-    set i i + 1
-    ]
+    person:increase-density-fields-at-radius radius id
+    set heading heading + 180
   ]
-  fd -1 * radius
-   ]
-   set heading heading + 180
+  
+  ask patch-here [
+     ; increase the density fields at the current location for the person's path
+     patch:update-fields id
   ]
-   ask patch-here [
 
-      set shortest-path-t replace-item id shortest-path-t min list (item id shortest-path-min + 3 * intensity) (item id shortest-path-t + intensity); (max [(item i shortest-path-t + intensity), (item i shortest-path-min + 2 * intensity)])
-]
+  person:increase-density-fields-at-radius radius id
+end
 
-   if is-patch? patch-ahead radius  [
-     fd radius
-   ask patches in-radius radius  [
-    set i 0
-    while [i < length repartition-among-paths]
-    [
-    if i != id [
-      set shortest-path-t replace-item i shortest-path-t min list (item i shortest-path-min + 3 * intensity) (item i shortest-path-t + intensity); (max [(item i shortest-path-t + intensity), (item i shortest-path-min + 2 * intensity)])
-    ]
-    set i i + 1
-    ]
-  ]
-  fd -1 * radius
+
+
+;;
+; anticipate future position by increasing density field in neighborhood of path ahead at a given radius
+to person:increase-density-fields-at-radius [r id]
+  if is-patch? patch-ahead r  [
+      ; advance of radius
+      fd r
+     ask patches in-radius r  [
+      let i 0
+      ; foreach other paths than the person's one
+      while [i < length repartition-among-paths][
+        if i != id [
+          patch:update-fields i
+        ]
+        set i i + 1
+      ]
+     ]
+    ; go back
+    fd -1 * r
    ]
 end
+
+
+
+
 
 
