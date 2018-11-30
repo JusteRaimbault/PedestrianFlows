@@ -7,11 +7,10 @@
 
 to indicators:reportGlobals
   let i 0
-   set path-mean-interaction []
-    while [i < length global:repartition-among-paths]
-    [
-      set  path-mean-interaction lput indicators:mean-interaction i "fast" path-mean-interaction
-    set i i + 1
+   set global:path-mean-interaction []
+    while [i < length global:repartition-among-paths][
+      set global:path-mean-interaction lput indicators:mean-interaction i "fast" global:path-mean-interaction
+      set i i + 1
     ]
 
     set i 0
@@ -21,9 +20,9 @@ to indicators:reportGlobals
       set  path-time-fast lput indicators:mean-age i "fast" path-time-fast
     set i i + 1
     ]
-       set interaction-meanpatch  sum [interaction] of patches / count persons with [ticks >= delay]
- set path-time-mean mean [age] of persons
- set interaction-maxpatch  max [interaction] of patches
+       set interaction-meanpatch  sum [patch:interaction] of patches / count persons with [ticks >= person:delay]
+ set path-time-mean mean [person:age] of persons
+ set interaction-maxpatch  max [patch:interaction] of patches
 end
 
 
@@ -34,19 +33,19 @@ to-report indicators:mean-age [id t]
 ifelse t = "slow" [
   ifelse id = -1
   [
-    if any? persons with [has-arrived? = true and speed-t = 1] [  report mean [age] of persons with [has-arrived? = true and speed-t = 1]]
+    if any? persons with [has-arrived? = true and person:speed-t = 1] [  report mean [person:age] of persons with [has-arrived? = true and person:speed-t = 1]]
   ]
   [
-   if any? persons with [has-arrived? = true and speed-t = 1 and id-path = id] [ report mean [age] of persons with [has-arrived? = true and speed-t = 1 and id-path = id]]
+   if any? persons with [has-arrived? = true and person:speed-t = 1 and person:path-id = id] [ report mean [person:age] of persons with [has-arrived? = true and person:speed-t = 1 and person:path-id = id]]
   ]
 ]
 [
     ifelse id = -1
   [
-  if any? persons with [has-arrived? = true and speed-t > 1] [ report mean [age] of persons with [has-arrived? = true and speed-t > 1]]
+  if any? persons with [has-arrived? = true and person:speed-t > 1] [ report mean [person:age] of persons with [has-arrived? = true and person:speed-t > 1]]
   ]
   [
-   if any? persons with [has-arrived? = true and speed-t > 1  and id-path = id] [ report mean [age] of persons with [has-arrived? = true and speed-t > 1 and id-path = id]]
+   if any? persons with [has-arrived? = true and person:speed-t > 1  and person:path-id = id] [ report mean [person:age] of persons with [has-arrived? = true and person:speed-t > 1 and person:path-id = id]]
   ]
 ]
 report 0
@@ -56,19 +55,19 @@ to-report indicators:mean-interaction [id t]
 ifelse t = "slow" [
   ifelse id = -1
   [
-  if any? persons with [has-arrived? = true and speed-t = 1] [ report mean [count-interaction / age] of persons with [has-arrived? = true and speed-t = 1]]
+  if any? persons with [has-arrived? = true and person:speed-t = 1] [ report mean [count-interaction / person:age] of persons with [has-arrived? = true and person:speed-t = 1]]
   ]
   [
-   if any? persons with [has-arrived? = true and speed-t = 1 and id-path = id] [ report mean [count-interaction / age] of persons with [has-arrived? = true and speed-t = 1 and id-path = id]]
+   if any? persons with [has-arrived? = true and person:speed-t = 1 and person:path-id = id] [ report mean [count-interaction / person:age] of persons with [has-arrived? = true and person:speed-t = 1 and person:path-id = id]]
   ]
 ]
 [
     ifelse id = -1
   [
-  if any? persons with [has-arrived? = true and speed-t > 1] [ report mean [count-interaction / age] of persons with [has-arrived? = true and speed-t > 1]]
+  if any? persons with [has-arrived? = true and person:speed-t > 1] [ report mean [count-interaction / person:age] of persons with [has-arrived? = true and person:speed-t > 1]]
   ]
   [
-   if any? persons with [has-arrived? = true and speed-t > 1 and id-path = id] [ report mean [count-interaction / age] of persons with [has-arrived? = true and speed-t > 1 and id-path = id]]
+   if any? persons with [has-arrived? = true and person:speed-t > 1 and person:path-id = id] [ report mean [count-interaction / person:age] of persons with [has-arrived? = true and person:speed-t > 1 and person:path-id = id]]
   ]
 ]
 report 0

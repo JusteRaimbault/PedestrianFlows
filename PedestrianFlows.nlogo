@@ -30,49 +30,129 @@ globals [
   ;meanage
 
   ;;
-  ;
-  direction
+  ; Directions (\in {0;1}) for each path
+  ; @type list
+  global:directions
 
-  max-speed-patch
-  path-mean-interaction ;
+  ;;
+  ; Maximal speed of patch
+  ; @type double
+  global:max-speed-patch
+
+  ;;
+  ; Temp var to assignate person ids
+  ; @type double
+  global:person-id
+
+  ;;
+  ; indicators
+
+
+  global:path-mean-interaction ;
+
   interaction-maxpatch ; compteur sortie : nombre d'interactions maximum sur un patch
   interaction-meanpatch ; compteur sortie : nombre d'interactions moyenne sur un patch
   path-time-mean
   path-time-fast ; compteur sortie :
 
-  global:person-id
 ]
 
 
 patches-own [
-  shortest-path-min
-  shortest-path-t
-  obstacle
-    safe?
-  finished?
 
-  id-special
-  interaction
-  speed-patch
-  presence
+  ;;
+  ; Baseline fields for shortest paths
+  ; @type list
+  patch:shortest-path-min
+
+  ;;
+  ; Dynamic fields for shortest paths
+  ; @type list
+  patch:shortest-path-t
+
+  ;;
+  ; Description of potential obstacle
+  ; @type list
+  ; variable length : 2 for actual obstacles, number of paths for free space
+  patch:obstacle
+
+  ;;
+  ; Boolean list giving if the patch is a target destination for paths
+  ; @type list
+  patch:safe?
+
+  ;;
+  ; Temporary variable to setup baseline fields
+  ; @type boolean
+  patch:finished?
+
+  ;;
+  ; is the patch a wall, a walking space, or an input/output
+  ; @type Either[Int,String]
+  ; 0 : wall ; 1 : walking space ; String : one of inputs/outputs
+  patch:id-special
+
+  ;;
+  ; Counter for interactions
+  ; @type int
+  patch:interaction
+
+  ;;
+  ; Speed on the patch : flat is 1 ; up lower than 1 ; down higher ; booth obstacles : parameter
+  ; @type double
+  patch:speed-patch
+
+  ;;
+  ; Cumulated number of persons that have been on the patch
+  ; @type double
+  patch:presence
+
 ]
 
 
 breed [persons person]
 
 persons-own [
-  ;
+
+  ;;
+  ; Unique id of the person
+  ; @type int
   person:person-id
 
-  id-path
-  delay
-  goal ; useless???
+  ;;
+  ; id of the path that the person takes
+  ; @type int
+  person:path-id
 
-  speed-max
-  speed-t
-  age
+  ;;
+  ; When does the person starts (in ticks)
+  ; @type double
+  person:delay
+
+  ;;
+  ; Maximal speed of the person
+  ; @type double
+  person:speed-max
+
+  ;;
+  ; Current speed of the person
+  ; @type double
+  person:speed-t
+
+  ;;
+  ; Since when is the person arrived in the station
+  ; @type int
+  person:age
+
+  ;;
+  ; Is the person arrived ?
+  ; @type boolean
   has-arrived?
+
+  ;;
+  ;
   count-interaction
+
 ]
 
 
@@ -197,7 +277,7 @@ path-number
 path-number
 0
 10
-4
+0
 1
 1
 NIL
@@ -276,7 +356,7 @@ number-of-persons
 number-of-persons
 10
 10000
-80
+700
 10
 1
 NIL
@@ -382,7 +462,7 @@ SWITCH
 527
 obstacleGreen?
 obstacleGreen?
-0
+1
 1
 -1000
 
@@ -406,7 +486,7 @@ percentage-slow-persons
 percentage-slow-persons
 0
 100
-50
+10
 1
 1
 NIL
@@ -436,7 +516,7 @@ flow-rate-of-persons
 flow-rate-of-persons
 1
 100
-8.5
+5
 0.1
 1
 NIL
@@ -448,7 +528,7 @@ MONITOR
 1274
 412
 Max number of interactions in one patch
-max [interaction] of patches
+max [patch:interaction] of patches
 1
 1
 11

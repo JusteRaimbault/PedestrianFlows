@@ -10,15 +10,15 @@ to display:draw
     let p patch round mouse-xcor round mouse-ycor
 
     ask  p [
-     if id-special = 1 [
+     if patch:id-special = 1 [
 
-      if obstacleGreen? and not obstacleRed? [set obstacle [0 1]
+      if obstacleGreen? and not obstacleRed? [set patch:obstacle [0 1]
         set pcolor green + 3.5]
-      if obstacleRed? and not obstacleGreen? [set obstacle [1 0]
+      if obstacleRed? and not obstacleGreen? [set patch:obstacle [1 0]
         set pcolor red + 3.5]
-      if obstacleRed? and obstacleGreen? [set obstacle [1 1]
+      if obstacleRed? and obstacleGreen? [set patch:obstacle [1 1]
         set pcolor black]
-      if not obstacleRed? and not obstacleGreen? [set obstacle [0 0]
+      if not obstacleRed? and not obstacleGreen? [set patch:obstacle [0 0]
         set pcolor 9.2]
       ;set obstacle 1
       ]
@@ -41,14 +41,14 @@ end
 
 to display:color-patches-with-interaction
   display:color-patches-with-environment
-  let maxI max [log (interaction + 1) 10] of patches
-  ask patches with [pcolor = 9.2] [set pcolor scale-color violet log (interaction + 1) 10  maxI 0]
+  let maxI max [log (patch:interaction + 1) 10] of patches
+  ask patches with [pcolor = 9.2] [set pcolor scale-color violet log (patch:interaction + 1) 10  maxI 0]
 end
 
 to display:color-patches-with-presence
   display:color-patches-with-environment
-  let maxP max [log (presence + 1) 10] of patches
-  ask patches with [pcolor = 9.2 or sum obstacle = 1] [set pcolor scale-color cyan log (presence + 1) 10  maxP 0]
+  let maxP max [log (patch:presence + 1) 10] of patches
+  ask patches with [pcolor = 9.2 or sum patch:obstacle = 1] [set pcolor scale-color cyan log (patch:presence + 1) 10  maxP 0]
 end
 
 
@@ -56,11 +56,11 @@ end
 to display:color-patches-with-shortest-path [id]
   display:color-patches-with-environment
   if id = -1 [stop]
-  let maxC max [item id shortest-path-t] of patches
-  let minC min [item id shortest-path-t] of patches
+  let maxC max [item id patch:shortest-path-t] of patches
+  let minC min [item id patch:shortest-path-t] of patches
 
-  ask patches with [item (item id direction) obstacle = 0] [set pcolor scale-color yellow item id shortest-path-t maxC minC]
-  ask patches with [item (item id direction) obstacle = 1] [set pcolor black]
+  ask patches with [item (item id global:directions) patch:obstacle = 0] [set pcolor scale-color yellow item id patch:shortest-path-t maxC minC]
+  ask patches with [item (item id global:directions) patch:obstacle = 1] [set pcolor black]
 end
 
 
@@ -68,17 +68,17 @@ end
 to display:color-patches-with-environment
   ask patches [set pcolor 9.2]
 
-  ask patches with [is-string? id-special] [set pcolor 3]
-  ask patches with [speed-patch > 1] [set pcolor white
+  ask patches with [is-string? patch:id-special] [set pcolor 3]
+  ask patches with [patch:speed-patch > 1] [set pcolor white
     set plabel-color black
     set plabel "x"]
-  ask patches with [speed-patch < 1] [set pcolor white
+  ask patches with [patch:speed-patch < 1] [set pcolor white
     set plabel-color black
     set plabel "+"]
-   ask patches with [sum obstacle = 2] [set pcolor black]
-  ask patches with [obstacle = [1 0]] [set pcolor red + 3.5
+   ask patches with [sum patch:obstacle = 2] [set pcolor black]
+  ask patches with [patch:obstacle = [1 0]] [set pcolor red + 3.5
     set plabel ""]
-  ask patches with [obstacle = [0 1]] [set pcolor green + 3.5
+  ask patches with [patch:obstacle = [0 1]] [set pcolor green + 3.5
     set plabel ""]
 
 end
@@ -92,15 +92,15 @@ end
 ; mapping between paths and turtle colors
 to display:color-persons [id]
 
-  ask persons with [id-path = 0] [set color green]
-  ask persons with [id-path = 1] [set color green]
-  ask persons with [id-path = 2] [set color red]
-  ask persons with [id-path = 3] [set color red]
-  ask persons with [id-path = 4] [set color red]
-  ask persons with [id-path = 5] [set color green]
-  ask persons with [id-path = 6] [set color green]
-  ask persons with [id-path = 7] [set color red]
-  ask persons with [id-path = 8] [set color red]
-  ask persons with [id-path = 9] [set color red]
-  ask persons with [id-path = id] [set color blue]
+  ask persons with [person:path-id = 0] [set color green]
+  ask persons with [person:path-id = 1] [set color green]
+  ask persons with [person:path-id = 2] [set color red]
+  ask persons with [person:path-id = 3] [set color red]
+  ask persons with [person:path-id = 4] [set color red]
+  ask persons with [person:path-id = 5] [set color green]
+  ask persons with [person:path-id = 6] [set color green]
+  ask persons with [person:path-id = 7] [set color red]
+  ask persons with [person:path-id = 8] [set color red]
+  ask persons with [person:path-id = 9] [set color red]
+  ask persons with [person:path-id = id] [set color blue]
 end

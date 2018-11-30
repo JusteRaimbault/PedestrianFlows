@@ -11,60 +11,62 @@ to setup:setup-environment
   setup:setup-globals
 
    ask patches [
-     set shortest-path-min [0 0 0 0 0 0 0 0 0 0]
-     set obstacle [0 0 0 0 0 0 0 0 0 0]
-     set safe? [false false false false false false false false false false] ; temporary
+     set patch:shortest-path-min [0 0 0 0 0 0 0 0 0 0]
+     set patch:obstacle [0 0 0 0 0 0 0 0 0 0]
+     set patch:safe? [false false false false false false false false false false] ; temporary
    ]
    setup:import-image
 
 end
 
 
+;;
+;
 to setup:import-image
   import-pcolors (word "setup/" input_image);"ligne4v8_modif3.bmp"
-  ask patches [set id-special 1]
+  ask patches [set patch:id-special 1]
   
   ; black in image : always obstacles
   ask patches with [pcolor = 0][
-    set obstacle [1 1]
-    set id-special 0
+    set patch:obstacle [1 1]
+    set patch:id-special 0
   ]
   
   ;; additional obstacles
   if existing-obstacles [
     ask patches with [pcolor = 4.5] [
-      set obstacle [1 1]
+      set patch:obstacle [1 1]
     ]
     ask patches with [pcolor = 14.9] [
-      set obstacle [1 0]
+      set patch:obstacle [1 0]
     ]
     ask patches with [pcolor = 105] [
-      set obstacle [0 1]
+      set patch:obstacle [0 1]
     ]
   ]
 
   ;; input / output : id-special
-  ask patches with [pcolor = 44.9] [set id-special "A"]
-  ask patches with [pcolor = 126] [set id-special "B"]
-  ask patches with [pcolor = 118.1] [set id-special "C"]
-  ask patches with [pcolor = 12.9] [set id-special "D"]
-  ask patches with [pcolor = 64.3] [set id-special "E"]
-  ask patches with [pcolor = 35.6] [set id-special "F"]
-  ask patches with [pcolor = 44.3] [set id-special "G"]
-  ask patches with [pcolor = 137.1] [set id-special "H"]
+  ask patches with [pcolor = 44.9] [set patch:id-special "A"]
+  ask patches with [pcolor = 126] [set patch:id-special "B"]
+  ask patches with [pcolor = 118.1] [set patch:id-special "C"]
+  ask patches with [pcolor = 12.9] [set patch:id-special "D"]
+  ask patches with [pcolor = 64.3] [set patch:id-special "E"]
+  ask patches with [pcolor = 35.6] [set patch:id-special "F"]
+  ask patches with [pcolor = 44.3] [set patch:id-special "G"]
+  ask patches with [pcolor = 137.1] [set patch:id-special "H"]
 
-  ask patches [set speed-patch 1]
-  ask patches with [pcolor = 25.6] [set speed-patch 1.75]
-  ask patches with [pcolor = 106.5] [set speed-patch 0.75]
+  ask patches [set patch:speed-patch 1]
+  ask patches with [pcolor = 25.6] [set patch:speed-patch 1.75]
+  ask patches with [pcolor = 106.5] [set patch:speed-patch 0.75]
 
   if existing-obstacles [
-    ask patches with [pcolor = 14.9] [set speed-patch speed-at-booth]
-    ask patches with [pcolor = 105] [set speed-patch speed-at-booth]
+    ask patches with [pcolor = 14.9] [set patch:speed-patch speed-at-booth]
+    ask patches with [pcolor = 105] [set patch:speed-patch speed-at-booth]
   ]
 
   display:color-patches-with-environment
 
-  set max-speed-patch max [speed-patch] of patches
+  set global:max-speed-patch max [patch:speed-patch] of patches
 end
 
 
@@ -72,7 +74,7 @@ end
 ; 
 to setup:setup-globals
   set global:repartition-among-paths [0.143 0.214 0.285 0.428 0.571 0.714 0.785 0.856 0.927 1]
-  set direction [0 0 0 1 1 0 0 0 1 1]
+  set global:directions [0 0 0 1 1 0 0 0 1 1]
 end
 
 
@@ -98,29 +100,30 @@ to setup:setup-space
    setup:keep-largest-connected-component [0 1]
    setup:keep-largest-connected-component [1 0]
 
-   ask patches with [id-special = "C"][patch:mark-safe-patch 0]
+   ask patches with [patch:id-special = "C"][patch:mark-safe-patch 0]
    patches:flood-fill 0
-   ask patches with [id-special = "F"][patch:mark-safe-patch 1]
+   ask patches with [patch:id-special = "F"][patch:mark-safe-patch 1]
    patches:flood-fill 1
-   ask patches with [id-special = "F"][patch:mark-safe-patch 2]
+   ask patches with [patch:id-special = "F"][patch:mark-safe-patch 2]
    patches:flood-fill 2
-   ask patches with [id-special = "H"][patch:mark-safe-patch 3]
+   ask patches with [patch:id-special = "H"][patch:mark-safe-patch 3]
    patches:flood-fill 3
-   ask patches with [id-special = "A"][patch:mark-safe-patch 4]
+   ask patches with [patch:id-special = "A"][patch:mark-safe-patch 4]
    patches:flood-fill 4
-   ask patches with [id-special = "C"][patch:mark-safe-patch 5]
+   ask patches with [patch:id-special = "C"][patch:mark-safe-patch 5]
    patches:flood-fill 5
-   ask patches with [id-special = "F"][patch:mark-safe-patch 6]
+   ask patches with [patch:id-special = "F"][patch:mark-safe-patch 6]
    patches:flood-fill 6
-   ask patches with [id-special = "C"][patch:mark-safe-patch 7]
+   ask patches with [patch:id-special = "C"][patch:mark-safe-patch 7]
    patches:flood-fill 7
-   ask patches with [id-special = "A"][patch:mark-safe-patch 8]
+   ask patches with [patch:id-special = "A"][patch:mark-safe-patch 8]
    patches:flood-fill 8
-   ask patches with [id-special = "H"][patch:mark-safe-patch 9]
+   ask patches with [patch:id-special = "H"][patch:mark-safe-patch 9]
    patches:flood-fill 9
 
    ask patches [
-     set shortest-path-t shortest-path-min
+     ; dynamic field at t=0 is the baseline
+     set patch:shortest-path-t patch:shortest-path-min
    ]
 end
 
@@ -128,15 +131,15 @@ end
 ;;
 ; fill with obstacle possible smaller isolated components
 to setup:keep-largest-connected-component [obstacle-type]
-  ask patches with [obstacle != [1 1] and obstacle != obstacle-type][sprout-nodes 1 [set hidden? true]]
+  ask patches with [patch:obstacle != [1 1] and patch:obstacle != obstacle-type][sprout-nodes 1 [set hidden? true]]
   ask nodes [create-links-with (other nodes in-radius 1.4) with [not link-neighbor? myself]]
   nw:set-context nodes links
   foreach but-first (sort-by [count ?1 > count ?2] nw:weak-component-clusters) [
     ask ? [
       ask patch-here [
         ; fail if an entrance was blocked
-        if not is-number? id-special [error "Obstacle configuration does not allow a single connected component including all input/output patches"]
-        set obstacle obstacle-type
+        if not is-number? patch:id-special [error "Obstacle configuration does not allow a single connected component including all input/output patches"]
+        set patch:obstacle obstacle-type
       ]
     ]
   ]
@@ -156,50 +159,50 @@ to setup:setup-persons-simple
     person:new-person
   ]
   
-  ask persons with [id-path = 0] [
-    move-to one-of patches with [id-special = "G"]
-    set delay period-between-trains * random (number-of-persons * 10 / flow-rate-of-persons / period-between-trains); + delay mod period-between-trains
+  ask persons with [person:path-id = 0] [
+    move-to one-of patches with [patch:id-special = "G"]
+    set person:delay period-between-trains * random (number-of-persons * 10 / flow-rate-of-persons / period-between-trains); + delay mod period-between-trains
   ]
 
 
 
-  ask persons with [id-path = 1] [
-    move-to one-of patches with [id-special = "G"]
-    set delay period-between-trains * random  (number-of-persons * 10 / flow-rate-of-persons / period-between-trains); + delay mod period-between-trains
+  ask persons with [person:path-id = 1] [
+    move-to one-of patches with [patch:id-special = "G"]
+    set person:delay period-between-trains * random  (number-of-persons * 10 / flow-rate-of-persons / period-between-trains); + delay mod period-between-trains
   ]
   
-  ask persons with [id-path = 2] [
-    move-to one-of patches with [id-special = "D"]
+  ask persons with [person:path-id = 2] [
+    move-to one-of patches with [patch:id-special = "D"]
   ]
 
-  ask persons with [id-path = 3] [
-    move-to one-of patches with [id-special = "D"]
+  ask persons with [person:path-id = 3] [
+    move-to one-of patches with [patch:id-special = "D"]
   ]
   
-  ask persons with [id-path = 4] [
-    move-to one-of patches with [id-special = "D"]
+  ask persons with [person:path-id = 4] [
+    move-to one-of patches with [patch:id-special = "D"]
   ]
 
-  ask persons with [id-path = 5] [
-    move-to one-of patches with [id-special = "B"]
-    set delay (period-between-trains / 2) + period-between-trains * random  (number-of-persons * 10 / flow-rate-of-persons / period-between-trains); + delay mod period-between-trains
+  ask persons with [person:path-id = 5] [
+    move-to one-of patches with [patch:id-special = "B"]
+    set person:delay (period-between-trains / 2) + period-between-trains * random  (number-of-persons * 10 / flow-rate-of-persons / period-between-trains); + delay mod period-between-trains
   ]
 
-  ask persons with [id-path = 6] [
-    move-to one-of patches with [id-special = "B"]
-    set delay (period-between-trains / 2) + period-between-trains * random  (number-of-persons * 10 / flow-rate-of-persons / period-between-trains); + delay mod period-between-trains
+  ask persons with [person:path-id = 6] [
+    move-to one-of patches with [patch:id-special = "B"]
+    set person:delay (period-between-trains / 2) + period-between-trains * random  (number-of-persons * 10 / flow-rate-of-persons / period-between-trains); + delay mod period-between-trains
   ]
   
-  ask persons with [id-path = 7] [
-    move-to one-of patches with [id-special = "E"]
+  ask persons with [person:path-id = 7] [
+    move-to one-of patches with [patch:id-special = "E"]
   ]
   
-  ask persons with [id-path = 8] [
-    move-to one-of patches with [id-special = "E"]
+  ask persons with [person:path-id = 8] [
+    move-to one-of patches with [patch:id-special = "E"]
   ]
   
-  ask persons with [id-path = 9] [
-    move-to one-of patches with [id-special = "E"]
+  ask persons with [person:path-id = 9] [
+    move-to one-of patches with [patch:id-special = "E"]
   ]
   display:color-persons -1
 end
