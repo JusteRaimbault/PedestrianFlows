@@ -12,14 +12,13 @@ to main:go
   let i 0
   ask persons with [delay <= ticks] [
     if hidden? = true and not has-arrived? [set hidden? false]
+    
     set i id-path
      if [item i safe?] of patch-here [
 
        set has-arrived? true
        set hidden? true]
-     if not has-arrived? [
-     set age age + 1
-     ]
+     if not has-arrived? [set age age + 1]
   ]
 
   ask persons with [(person:can-play? (speed-t) ([speed-patch] of patch-here)) and delay <= ticks and not has-arrived?][

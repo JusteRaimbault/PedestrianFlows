@@ -107,7 +107,7 @@ to person:increase-density-fields-at-radius [r id]
      ask patches in-radius r  [
       let i 0
       ; foreach other paths than the person's one
-      while [i < length repartition-among-paths][
+      while [i < length global:repartition-among-paths][
         if i != id [
           patch:update-fields i
         ]
@@ -117,6 +117,33 @@ to person:increase-density-fields-at-radius [r id]
     ; go back
     fd -1 * r
    ]
+end
+
+
+
+;;
+; Constructor for a person
+to person:new-person
+  set hidden? true
+  ;set delay who * 10 / flow-rate-of-persons
+  ; FIXME : using who to set a property is unsafe -> here interferences with the environment setup
+  set person:person-id global:person-id set global:person-id global:person-id + 1
+  ;show person:person-id
+  set delay person:person-id * 10 / flow-rate-of-persons
+    
+  let temp100 random-float 100
+  ifelse temp100 < percentage-slow-persons [
+    set speed-max 1
+    set shape "person slow"
+  ][
+    set speed-max ratio-speed-fast-slow
+    set shape "person"
+  ]
+  set speed-t speed-max
+  set has-arrived? false
+  let temp random-float 1
+  set id-path utils:position-in-list temp global:repartition-among-paths
+  set size (world-height + world-width) / 70
 end
 
 

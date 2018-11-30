@@ -1,95 +1,18 @@
-extensions [nw]
-
-__includes [
-
-  "setup.nls"
-  "main.nls"
-
-  "person.nls"
-  "patches.nls"
-
-  "indicators.nls"
-
-  "utils.nls"
-
-  "display.nls"
-
-]
-
-
-
-globals [
-
-  ;;
-  ; probabilities among paths
-  ; @type list
-  global:repartition-among-paths
-
-  ;;
-  ; ?
-  ;meanage
-
-  ;;
-  ;
-  direction
-
-  max-speed-patch
-  path-mean-interaction ;
-  interaction-maxpatch ; compteur sortie : nombre d'interactions maximum sur un patch
-  interaction-meanpatch ; compteur sortie : nombre d'interactions moyenne sur un patch
-  path-time-mean
-  path-time-fast ; compteur sortie :
-
-  global:person-id
-]
-
-
 patches-own [
-  shortest-path-min
-  shortest-path-t
-  obstacle
-    safe?
-  finished?
-
-  id-special
-  interaction
-  speed-patch
-  presence
+  ressources
 ]
-
-
-breed [persons person]
-
-persons-own [
-  ;
-  person:person-id
-
-  id-path
-  delay
-  goal ; useless???
-
-  speed-max
-  speed-t
-  age
-  has-arrived?
-  count-interaction
+turtles-own [
+  distanceFromStart
 ]
-
-
-breed [nodes node]
-
-nodes-own [
-]
-
 @#$#@#$#@
 GRAPHICS-WINDOW
-8
-21
-616
-379
--1
--1
-4.823
+7
+10
+366
+390
+10
+10
+16.62
 1
 10
 1
@@ -99,472 +22,90 @@ GRAPHICS-WINDOW
 0
 0
 1
-0
-123
-0
-67
+-10
+10
+-10
+10
 0
 0
 1
 ticks
 30.0
 
-BUTTON
-126
-432
-254
-466
-Setup environment
-setup:setup-environment
-NIL
-1
-T
-OBSERVER
+PLOT
+979
+274
+1179
+424
+Distance From Start
 NIL
 NIL
-NIL
-NIL
-1
-
-BUTTON
-454
-483
-590
-561
-go
-main:go
-T
-1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
-1
-
-BUTTON
-130
-587
-218
-621
-mark-safe
-display:mark-safe path-number - 1
-T
-1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
-1
-
-BUTTON
-302
-422
-438
-476
-draw
-display:draw
-T
-1
-T
-PATCH
-NIL
-NIL
-NIL
-NIL
-1
-
-MONITOR
-1219
-52
-1355
-97
-Total number of paths
-length global:repartition-among-paths
-17
-1
-11
-
-SLIDER
-872
-54
-983
-87
-path-number
-path-number
-0
-10
-4
-1
-1
-NIL
-HORIZONTAL
-
-BUTTON
-463
-431
-577
-466
-Setup agents
-setup:setup-agents
-NIL
-1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
-1
-
-BUTTON
-999
-58
-1215
-92
-color-patches-with-shortest-path
-display:color-patches-with-shortest-path path-number - 1\ndisplay:color-persons path-number - 1
-NIL
-1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
-1
-
-SLIDER
-636
-307
-809
-340
-intensity
-intensity
-0
-10
-3
-0.1
-1
-NIL
-HORIZONTAL
-
-SLIDER
-634
-264
-807
-297
-radius
-radius
-1
-4
-2.5
-0.1
-1
-NIL
-HORIZONTAL
-
-SLIDER
-99
-522
-271
-555
-number-of-persons
-number-of-persons
-10
-10000
-80
-10
-1
-NIL
-HORIZONTAL
-
-SLIDER
-641
-372
-813
-405
-regrow-speed
-regrow-speed
-0
-10
-1
-0.1
-1
-NIL
-HORIZONTAL
-
-BUTTON
-824
-401
-1024
-435
-color-patches-with-interaction
-display:color-patches-with-interaction
-NIL
-1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
-1
-
-MONITOR
-1040
-487
-1250
-532
-Path average time for slow persons
-indicators:mean-age (path-number - 1) \"slow\"
-1
-1
-11
-
-TEXTBOX
-638
-23
-788
-41
-Parameters
-11
 0.0
-1
-
-TEXTBOX
-868
-29
-919
-48
-Outputs
-11
+10.0
 0.0
-1
+10.0
+true
+false
+"" ""
+PENS
+"" 1.0 0 -16777216 true "" "if any? turtles [plot mean [distanceFromStart] of turtles]"
 
-TEXTBOX
-650
-240
-800
-258
-Behaviour
-11
-0.0
-1
-
-TEXTBOX
-636
-47
-786
-65
-Global environment
-11
-0.0
-1
-
-TEXTBOX
-645
-348
-795
-366
-Local environment
-11
-0.0
-1
-
-SWITCH
-302
-494
-445
-527
-obstacleGreen?
-obstacleGreen?
-0
-1
--1000
-
-SWITCH
-305
-532
-441
-565
-obstacleRed?
-obstacleRed?
-0
-1
--1000
-
-SLIDER
-627
-121
-818
-154
-percentage-slow-persons
-percentage-slow-persons
-0
-100
-50
-1
-1
+BUTTON
+390
+107
+538
+140
+reset type 1
+ca\nreset-ticks\nclear-plot\ncreate-turtles 1 [\nsetxy min-pxcor min-pycor\nset heading 45\nset color red\npd\n]
 NIL
-HORIZONTAL
-
-SLIDER
-635
-159
-808
-192
-ratio-speed-fast-slow
-ratio-speed-fast-slow
 1
-5
-2
-0.1
-1
+T
+OBSERVER
 NIL
-HORIZONTAL
-
-SLIDER
-625
-75
-798
-108
-flow-rate-of-persons
-flow-rate-of-persons
-1
-100
-8.5
-0.1
-1
 NIL
-HORIZONTAL
+NIL
+NIL
+1
 
-MONITOR
-1039
-367
-1274
+BUTTON
 412
-Max number of interactions in one patch
-max [interaction] of patches
+190
+543
+223
+move
+if ticks < 20 [\nask turtles [\nset heading heading + random-float change-angle - change-angle / 2\nforward 1\nset distanceFromStart distance patch min-pxcor min-pycor\n]\ntick\n]
+T
 1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
 1
-11
 
-MONITOR
-1040
+SLIDER
+390
+404
+562
 437
-1247
-482
-Path average time for fast persons
-indicators:mean-age (path-number - 1) \"fast\"
-1
-1
-11
-
-MONITOR
-1043
-540
-1363
-585
-Path interactions counted per time unit for fast persons
-indicators:mean-interaction (path-number - 1) \"fast\"
-2
-1
-11
-
-MONITOR
-1045
-593
-1365
-638
-Path interactions counter per time unit for slow persons
-indicators:mean-interaction (path-number - 1) \"slow\"
-2
-1
-11
-
-PLOT
-629
-455
-1022
-644
-Number of persons
-NIL
-NIL
-0.0
-10.0
-0.0
-10.0
-true
-true
-"" ""
-PENS
-"on-site" 1.0 0 -955883 true "" "plotxy ticks count turtles with [delay <= ticks and has-arrived? = false]"
-"arrived" 1.0 0 -13345367 true "" "plotxy ticks count turtles with [delay <= ticks and has-arrived?]"
-"not-started" 1.0 0 -1184463 true "" "plotxy ticks count turtles with [delay > ticks]"
-
-PLOT
-868
-102
-1295
-350
-Path average time for fast persons
-NIL
-NIL
-0.0
-10.0
-0.0
-10.0
-true
-true
-"" ""
-PENS
-"path1" 1.0 0 -13840069 true "" "plotxy ticks indicators:mean-age (0) \"fast\""
-"path2" 1.0 0 -13840069 true "" "plotxy ticks indicators:mean-age (1) \"fast\""
-"path3" 1.0 0 -7500403 true "" "plotxy ticks indicators:mean-age (2) \"fast\""
-"path4" 1.0 0 -2674135 true "" "plotxy ticks indicators:mean-age (3) \"fast\""
-"path5" 1.0 0 -2674135 true "" "plotxy ticks indicators:mean-age (4) \"fast\""
-"path6" 1.0 0 -13840069 true "" "plotxy ticks indicators:mean-age (5) \"fast\""
-"path7" 1.0 0 -13840069 true "" "plotxy ticks indicators:mean-age (6) \"fast\""
-"path8" 1.0 0 -7500403 true "" "plotxy ticks indicators:mean-age (7) \"fast\""
-"path9" 1.0 0 -2674135 true "" "plotxy ticks indicators:mean-age (8) \"fast\""
-"path10" 1.0 0 -2674135 true "" "plotxy ticks indicators:mean-age (9) \"fast\""
-
-TEXTBOX
-1043
-415
-1180
-433
-for path : path-number
-11
-0.0
-1
-
-SLIDER
-638
-412
-810
-445
-speed-at-booth
-speed-at-booth
-0.1
-1
-0.8
-0.05
+change-angle
+change-angle
+0
+90
+5
+5
 1
 NIL
 HORIZONTAL
 
 BUTTON
-824
-362
-1024
-395
-color-patches-with-presence
-display:color-patches-with-presence
+418
+290
+529
+323
+back to corner
+ask turtles [\npu\n]\nask turtles [\nsetxy min-pxcor min-pycor\nset heading 45\npd\n]\nreset-ticks\nclear-plot
 NIL
 1
 T
@@ -575,41 +116,264 @@ NIL
 NIL
 1
 
-SLIDER
-635
-200
-808
-233
-period-between-trains
-period-between-trains
-10
-1000
-300
-10
+BUTTON
+629
+192
+754
+225
+move neighbors
+if ticks < 20 [\nask turtles [\nlet tempP one-of neighbors\nset heading towards tempP\nmove-to tempP\nset distanceFromStart distance patch min-pxcor min-pycor\n]\ntick\n]
+T
 1
+T
+OBSERVER
 NIL
-HORIZONTAL
-
-CHOOSER
-234
-579
-423
-624
-input_image
-input_image
-"ligne4v8.bmp" "ligne4v8_modif1.bmp"
-0
-
-SWITCH
-121
-481
-293
-514
-existing-obstacles
-existing-obstacles
-0
+NIL
+NIL
+NIL
 1
--1000
+
+BUTTON
+818
+192
+943
+225
+move ressources
+if ticks < 20 [\nask turtles [\nlet tempP max-one-of neighbors [ressources]\nset heading towards tempP\nmove-to tempP\nset distanceFromStart distance patch min-pxcor min-pycor\n]\ntick\n]
+T
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+995
+193
+1183
+226
+move & consume ressources
+if ticks < 20 [\nask turtles [\nlet tempP max-one-of neighbors [ressources]\nset heading towards tempP\nmove-to tempP\nset distanceFromStart distance patch min-pxcor min-pycor\nask patch-here [set ressources max list 0 (ressources - 1)]\n]\ntick\n]
+T
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+821
+98
+923
+131
+colorPatches
+ ask patches \n  [\n   set pcolor scale-color 67 ressources 0 20\n   ]\n
+T
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+839
+292
+928
+325
+clear draw
+cd\nask turtles [\npu\n]\nask turtles [\nsetxy min-pxcor min-pycor\nset heading 45\npd\n]\nreset-ticks\nclear-plot
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+TEXTBOX
+425
+78
+575
+96
+STEP 1 : RESET
+11
+0.0
+1
+
+TEXTBOX
+416
+155
+566
+183
+STEP 2 : CLICK ON \"MOVE\"\n(and keep it active)
+11
+0.0
+1
+
+TEXTBOX
+386
+253
+611
+295
+STEP 3 : TURTLE GO BACK TO START\n(do it many times to appreciate variability)
+11
+0.0
+1
+
+TEXTBOX
+386
+341
+582
+383
+STEP 4 : SET PARAMETER VALUE FOR DEFINING ANGLE-CHANGE BETWEEN TWO STEPS
+11
+0.0
+1
+
+TEXTBOX
+416
+28
+566
+68
+MOBILITY ON\nEMPTY SPACE
+16
+0.0
+1
+
+BUTTON
+619
+101
+771
+134
+reset type 2
+ca\nreset-ticks\ncreate-turtles 1 [\nsetxy min-pxcor min-pycor\nset heading 45\nset color red\npd\n]\nask patches [\nset ressources 5 + random 3\n]\nrepeat 5 [\ndiffuse ressources 0.5\n]\n\n
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+TEXTBOX
+635
+25
+785
+65
+MOBILITY\nON PATCHES
+16
+0.0
+1
+
+TEXTBOX
+651
+76
+801
+94
+STEP 1 : RESET
+11
+0.0
+1
+
+TEXTBOX
+321
+449
+599
+477
+WHEN YOU'RE FINISHED, CLICK ON \"MOVE\" AGAIN
+11
+0.0
+1
+
+TEXTBOX
+639
+154
+789
+182
+STEP 2 : GO TO ANY\nNEIGHBOORING PATCH
+11
+0.0
+1
+
+TEXTBOX
+816
+60
+1077
+102
+STEP 4 : DISPLAY RESSOURCES\nAVAILABLE ON PATCHES
+11
+0.0
+1
+
+BUTTON
+639
+292
+750
+325
+back to corner
+ask turtles [\npu\n]\nask turtles [\nsetxy min-pxcor min-pycor\nset heading 45\npd\n]\nreset-ticks\nclear-plot
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+TEXTBOX
+616
+253
+837
+309
+STEP 3 : TURTLE GO BACK TO START\n(do it many times to appreciate variability)
+11
+0.0
+1
+
+TEXTBOX
+808
+155
+987
+197
+STEP 5 : GO TO NEIGHBOR PATCH WITH HIGHEST RESSOURCES
+11
+0.0
+1
+
+TEXTBOX
+1028
+159
+1178
+187
+STEP 6 : AND CONSUME RESSOURCES LOCALLY
+11
+0.0
+1
+
+TEXTBOX
+676
+375
+919
+431
+BETWEEN ALTERNATIVE RULES FOR MOBILITY, REMEMBER TO UNCLICK BUTTON
+11
+0.0
+1
 
 @#$#@#$#@
 ## WHAT IS IT?
@@ -618,16 +382,11 @@ existing-obstacles
 
 ## HOW IT WORKS
 
-Field-based pedestrian model
+(what rules the agents use to create the overall behavior of the model)
 
 ## HOW TO USE IT
 
-CA : clear-all
-setup-part1
-(draw) if you want to modify the environment
-setup-part2
-go
-
+(how to use the model, including a description of each of the items in the Interface tab)
 
 ## THINGS TO NOTICE
 
@@ -641,14 +400,17 @@ go
 
 (suggested things to add or change in the Code tab to make the model more complicated, detailed, accurate, etc.)
 
+## NETLOGO FEATURES
+
+(interesting or unusual features of NetLogo that the model uses, particularly in the Code tab; or where workarounds were needed for missing features)
+
+## RELATED MODELS
+
+(models in the NetLogo Models Library and elsewhere which are of related interest)
 
 ## CREDITS AND REFERENCES
 
-Le Nechet 2015
-Université Paris Est
-
-Raimbault, 2018
-ISC-PIF
+(a reference to the model's URL on the web if it has one, as well as any other necessary credits, citations, and links)
 @#$#@#$#@
 default
 true
@@ -830,23 +592,6 @@ Rectangle -7500403 true true 127 79 172 94
 Polygon -7500403 true true 195 90 240 150 225 180 165 105
 Polygon -7500403 true true 105 90 60 150 75 180 135 105
 
-person slow
-false
-0
-Polygon -7500403 true true 120 90 90 90 60 195 90 210 105 135 120 195 90 285 105 300 135 300 150 225 165 300 195 300 210 285 180 195 195 135 210 210 240 195 210 90 180 90 150 90
-Circle -7500403 true true 110 5 80
-Rectangle -7500403 true true 127 76 172 91
-Line -16777216 false 172 90 161 94
-Line -16777216 false 128 90 139 94
-Polygon -13345367 true false 210 225 210 300 285 270 285 195
-Rectangle -13791810 true false 180 225 210 300
-Polygon -14835848 true false 180 226 210 225 285 195 255 196
-Polygon -13345367 true false 209 202 209 216 244 202 243 188
-Rectangle -13791810 true false 30 225 60 300
-Polygon -13345367 true false 60 225 60 300 135 270 135 195
-Polygon -14835848 true false 30 226 60 225 135 195 105 196
-Polygon -13345367 true false 59 202 59 216 94 202 93 188
-
 plant
 false
 0
@@ -977,60 +722,6 @@ NetLogo 5.3.1
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
-<experiments>
-  <experiment name="experiment" repetitions="15" runMetricsEveryStep="false">
-    <setup>ca
-setup:setup-environment
-setup:setup-agents</setup>
-    <go>main:go
-indicators:reportGlobals</go>
-    <timeLimit steps="10000"/>
-    <exitCondition>count turtles with [has-arrived? = false] = 0</exitCondition>
-    <metric>path-time-mean</metric>
-    <metric>interaction-meanpatch</metric>
-    <metric>path-mean-interaction</metric>
-    <metric>path-time-fast</metric>
-    <metric>interaction-maxpatch</metric>
-    <enumeratedValueSet variable="number-of-persons">
-      <value value="700"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="regrow-speed">
-      <value value="1"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="obstacleRed?">
-      <value value="true"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="flow-rate-of-persons">
-      <value value="5"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="intensity">
-      <value value="3"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="ratio-speed-fast-slow">
-      <value value="2"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="path-number">
-      <value value="0"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="input_image">
-      <value value="&quot;ligne4v8.bmp&quot;"/>
-      <value value="&quot;ligne4v8_modif1.bmp&quot;"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="percentage-slow-persons">
-      <value value="10"/>
-      <value value="50"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="radius">
-      <value value="2.5"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="existing-obstacles">
-      <value value="true"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="obstacleGreen?">
-      <value value="false"/>
-    </enumeratedValueSet>
-  </experiment>
-</experiments>
 @#$#@#$#@
 @#$#@#$#@
 default

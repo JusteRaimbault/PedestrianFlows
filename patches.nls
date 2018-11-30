@@ -51,7 +51,7 @@ end
 to patches:regrow-shortest-path
   ask patches [
     let i 0
-    while [i < length repartition-among-paths][
+    while [i < length global:repartition-among-paths][
       if item i shortest-path-t != item i shortest-path-min [
         set shortest-path-t replace-item i shortest-path-t max list (item i shortest-path-min) (item i shortest-path-t - regrow-speed)
       ]

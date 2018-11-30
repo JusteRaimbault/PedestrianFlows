@@ -71,7 +71,7 @@ end
 ;;
 ; 
 to setup:setup-globals
-  set repartition-among-paths [0.143 0.214 0.285 0.428 0.571 0.714 0.785 0.856 0.927 1]
+  set global:repartition-among-paths [0.143 0.214 0.285 0.428 0.571 0.714 0.785 0.856 0.927 1]
   set direction [0 0 0 1 1 0 0 0 1 1]
 end
 
@@ -144,57 +144,63 @@ to setup:keep-largest-connected-component [obstacle-type]
   display:color-patches-with-environment
 end
 
+
+
+;;
+; setup persons
 to setup:setup-persons-simple
+  
+  set global:person-id 0
+  
   create-persons number-of-persons [
-    set hidden? true
-    set delay who * 10 / flow-rate-of-persons
-    let temp100 random-float 100
-    ifelse temp100 < percentage-slow-persons [
-      set speed-max 1
-      set shape "person slow"
-    ][
-    set speed-max ratio-speed-fast-slow
-    set shape "person"
-    ]
-    set speed-t speed-max
-    set has-arrived? false
-    let temp random-float 1
-    set id-path utils:position-in-list temp repartition-among-paths
-    set size (world-height + world-width) / 70
-
-
+    person:new-person
   ]
-ask persons with [id-path = 0] [
-  move-to one-of patches with [id-special = "G"]
-  set delay period-between-trains * random (number-of-persons * 10 / flow-rate-of-persons / period-between-trains); + delay mod period-between-trains
+  
+  ask persons with [id-path = 0] [
+    move-to one-of patches with [id-special = "G"]
+    set delay period-between-trains * random (number-of-persons * 10 / flow-rate-of-persons / period-between-trains); + delay mod period-between-trains
   ]
 
 
 
-ask persons with [id-path = 1] [
-  move-to one-of patches with [id-special = "G"]
-   set delay period-between-trains * random  (number-of-persons * 10 / flow-rate-of-persons / period-between-trains); + delay mod period-between-trains
+  ask persons with [id-path = 1] [
+    move-to one-of patches with [id-special = "G"]
+    set delay period-between-trains * random  (number-of-persons * 10 / flow-rate-of-persons / period-between-trains); + delay mod period-between-trains
   ]
-ask persons with [id-path = 2] [
-  move-to one-of patches with [id-special = "D"]]
-ask persons with [id-path = 3] [
-  move-to one-of patches with [id-special = "D"]]
-ask persons with [id-path = 4] [
-  move-to one-of patches with [id-special = "D"]]
-ask persons with [id-path = 5] [
-  move-to one-of patches with [id-special = "B"]
-   set delay (period-between-trains / 2) + period-between-trains * random  (number-of-persons * 10 / flow-rate-of-persons / period-between-trains); + delay mod period-between-trains
+  
+  ask persons with [id-path = 2] [
+    move-to one-of patches with [id-special = "D"]
   ]
-ask persons with [id-path = 6] [
-  move-to one-of patches with [id-special = "B"]
-   set delay (period-between-trains / 2) + period-between-trains * random  (number-of-persons * 10 / flow-rate-of-persons / period-between-trains); + delay mod period-between-trains
+
+  ask persons with [id-path = 3] [
+    move-to one-of patches with [id-special = "D"]
   ]
-ask persons with [id-path = 7] [
-  move-to one-of patches with [id-special = "E"]]
-ask persons with [id-path = 8] [
-  move-to one-of patches with [id-special = "E"]]
-ask persons with [id-path = 9] [
-  move-to one-of patches with [id-special = "E"]]
+  
+  ask persons with [id-path = 4] [
+    move-to one-of patches with [id-special = "D"]
+  ]
+
+  ask persons with [id-path = 5] [
+    move-to one-of patches with [id-special = "B"]
+    set delay (period-between-trains / 2) + period-between-trains * random  (number-of-persons * 10 / flow-rate-of-persons / period-between-trains); + delay mod period-between-trains
+  ]
+
+  ask persons with [id-path = 6] [
+    move-to one-of patches with [id-special = "B"]
+    set delay (period-between-trains / 2) + period-between-trains * random  (number-of-persons * 10 / flow-rate-of-persons / period-between-trains); + delay mod period-between-trains
+  ]
+  
+  ask persons with [id-path = 7] [
+    move-to one-of patches with [id-special = "E"]
+  ]
+  
+  ask persons with [id-path = 8] [
+    move-to one-of patches with [id-special = "E"]
+  ]
+  
+  ask persons with [id-path = 9] [
+    move-to one-of patches with [id-special = "E"]
+  ]
   display:color-persons -1
 end
 
