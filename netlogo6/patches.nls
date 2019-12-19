@@ -1,0 +1,83 @@
+
+;;
+; patches
+
+
+
+;;
+; Construction of the shortest-path-min field
+to patches:flood-fill [id]
+  ; based on dijkstra algorithm and netlogo "patch-tools"
+  
+  ask patches with [item (item id global:directions) patch:obstacle = 0] [
+    set patch:finished? false
+  ]
+   ask patches with [item (item id global:directions) patch:obstacle = 1] [
+     ; obstacles for this direction are not taken into account
+    set patch:finished? true
+  ]
+   
+  ask patches with [item id patch:safe? = true] [
+    ; safe places are destination ; potential set to 0 and considered as finished
+    set patch:shortest-path-min replace-item id patch:shortest-path-min 0
+    set patch:finished? true
+  ]
+  
+  while [any? patches with [patch:finished? = false and item (item id global:directions) patch:obstacle = 0]] [
+
+    ask patches with [patch:finished? = true and item (item id global:directions) patch:obstacle = 0] [
+      let temp self
+      ask neighbors with [patch:finished? != true and item (item id global:directions) patch:obstacle = 0][
+        let distemp distance temp
+        ; new field increase by distance and speed
+        let new (([item id patch:shortest-path-min] of myself) + distemp / patch:speed-patch)
+
+        if (new < item id patch:shortest-path-min or item id patch:shortest-path-min = 0)[set patch:shortest-path-min replace-item id patch:shortest-path-min new]
+
+       if distemp = 1 [
+         ; diffusion propagates to 4 nearest neighbors
+         set patch:finished? true
+       ]
+    ]
+  ]
+
+  ]
+
+end
+
+
+;;
+; Dynamic field shortest-path-t
+to patches:regrow-shortest-path
+  ask patches [
+    let i 0
+    while [i < length global:repartition-among-paths][
+      if item i patch:shortest-path-t != item i patch:shortest-path-min [
+        set patch:shortest-path-t replace-item i patch:shortest-path-t max list (item i patch:shortest-path-min) (item i patch:shortest-path-t - regrow-speed)
+      ]
+      set i i + 1
+    ]
+  ]
+end
+
+
+
+;;
+;
+to patch:mark-safe-patch [id]
+  set patch:safe? replace-item id patch:safe? true
+end
+
+
+;;
+; patch procedure to update density fields
+to patch:update-fields [i]
+  ; increase the local field by 3*intensity for shortest-path-min and intensity for shortest-path-t
+  ;  -> intensity is the intensity of interactions between persons
+  set patch:shortest-path-t replace-item i patch:shortest-path-t min list (item i patch:shortest-path-min + 3 * intensity) (item i patch:shortest-path-t + intensity)
+  ; (max [(item i shortest-path-t + intensity), (item i shortest-path-min + 2 * intensity)])
+end
+
+  
+
+

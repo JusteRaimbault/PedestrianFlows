@@ -1,0 +1,153 @@
+
+;;
+; persons
+
+
+;;
+; 
+to-report person:can-play? [s sp]
+  let temp1 random-float ratio-speed-fast-slow
+  let temp2 random-float global:max-speed-patch
+
+  report temp1 < s and temp2 < sp
+end
+
+
+
+;;
+; core persons procedure : follow the gradient of the shortest path associated to the turtle
+;   - test noise in mvt
+;   - todo add the presence of walls in the guiding field (or add redirection in agents ?)
+to person:downhill-shortest-path [id]
+
+    let tempI 0
+    ;move-to max-one-of patches in-cone 1 180 [item id shortest-path-t]
+    ; potential position : gradient descent following shortest-path-t, for patches which are not an obstacle for the persons' direction (0 or 1)
+    let temp min-one-of neighbors with [item (item id global:directions) patch:obstacle = 0] [item id patch:shortest-path-t]
+    
+    let ok? true
+    
+    ask temp [
+      if item (item id global:directions) patch:obstacle > 0 [set ok? false]
+      if count persons-here  with [person:delay <= ticks and not person:has-arrived?] > 0 [
+        ; if people occupy the potential destination, change behavior
+        set ok? false
+        set patch:interaction patch:interaction + 1
+        set tempI 1
+      ]
+    ]
+    
+    ifelse ok? [
+      ; move to the potential destination if not occupied
+      set heading towards temp
+      move-to temp
+    ][
+      ; otherwise select a new destination: second best
+       let temp2 min-one-of neighbors with [item (item id global:directions) patch:obstacle = 0 and pxcor != [pxcor] of temp and pycor != [pycor] of temp] [item id patch:shortest-path-t]
+       let ok?2 true
+       if is-patch? temp2 [ ; if the second best exists
+         ask temp2 [
+           if item (item id global:directions) patch:obstacle > 0 [set ok? false]
+           if count persons-here with [person:delay <= ticks and person:has-arrived? = false] > 0 [
+             ;  set interaction interaction + 1
+             ; why do we not increase the interactions for the second best ? -> avoid overestimation ?
+             ; set tempI 1
+             set ok? false
+           ]
+         ]
+        if ok?2 [
+          ; move to second best if possible
+          set heading towards temp2
+          move-to temp2
+        ]
+      ]
+
+      if not ok?2 [
+        ; otherwise move to any neighbor if possible
+        if any? neighbors with [item (item id global:directions) patch:obstacle = 0 and persons-here with [person:delay <= ticks and person:has-arrived? = false] = 0] [
+          move-to one-of neighbors with [item (item id global:directions) patch:obstacle = 0 and persons-here with [person:delay <= ticks and person:has-arrived? = false] = 0]
+        ]
+      ]
+    ]
+    
+    ; cumulated interactions
+    set person:count-interaction person:count-interaction + tempI
+
+end
+
+
+
+;;
+; person procedure to deal with density
+to person:temporary-increase-shortest-path [id]
+  
+  if [sum patch:obstacle] of patch-here = 1 [
+    ; turn back if step on an obstacle
+    set heading heading + 180
+    person:increase-density-fields-at-radius radius id
+    set heading heading + 180
+  ]
+  
+  ask patch-here [
+     ; increase the density fields at the current location for the person's path
+     patch:update-fields id
+  ]
+
+  person:increase-density-fields-at-radius radius id
+end
+
+
+
+;;
+; anticipate future position by increasing density field in neighborhood of path ahead at a given radius
+to person:increase-density-fields-at-radius [r id]
+  if is-patch? patch-ahead r  [
+      ; advance of radius
+      fd r
+     ask patches in-radius r  [
+      let i 0
+      ; foreach other paths than the person's one
+      while [i < length global:repartition-among-paths][
+        if i != id [
+          patch:update-fields i
+        ]
+        set i i + 1
+      ]
+     ]
+    ; go back
+    fd -1 * r
+   ]
+end
+
+
+
+;;
+; Constructor for a person
+to person:new-person
+  set hidden? true
+  ;set delay who * 10 / flow-rate-of-persons
+  ; FIXME : using who to set a property is unsafe -> here interferences with the environment setup
+  set person:person-id global:person-id set global:person-id global:person-id + 1
+  ;show person:person-id
+  set person:delay person:person-id * 10 / flow-rate-of-persons
+    
+  let temp100 random-float 100
+  ifelse temp100 < percentage-slow-persons [
+    set person:speed-max 1
+    set shape "person slow"
+  ][
+    set person:speed-max ratio-speed-fast-slow
+    set shape "person"
+  ]
+  set person:speed-t person:speed-max
+  set person:has-arrived? false
+  let temp random-float 1
+  set person:path-id utils:position-in-list temp global:repartition-among-paths
+  set size (world-height + world-width) / 70
+end
+
+
+
+
+
+

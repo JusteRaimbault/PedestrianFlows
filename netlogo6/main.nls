@@ -1,0 +1,39 @@
+
+;;
+; main
+
+
+
+
+to main:go
+
+  patches:regrow-shortest-path
+
+  let i 0
+  ask persons with [person:delay <= ticks] [
+    if hidden? = true and not person:has-arrived? [set hidden? false]
+    
+    set i person:path-id
+     if [item i patch:safe?] of patch-here [
+
+       set person:has-arrived? true
+       set hidden? true]
+     if not person:has-arrived? [set person:age person:age + 1]
+  ]
+
+  ask persons with [(person:can-play? (person:speed-t) ([patch:speed-patch] of patch-here)) and person:delay <= ticks and not person:has-arrived?][
+
+    person:downhill-shortest-path person:path-id
+    person:temporary-increase-shortest-path person:path-id
+  ]
+  ifelse count persons with [not person:has-arrived?] > 0 [tick]
+  [;
+  ]
+  ask patches [
+    set patch:presence patch:presence + count persons-here
+  ]
+end
+
+
+
+

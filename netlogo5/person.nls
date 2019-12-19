@@ -29,7 +29,7 @@ to person:downhill-shortest-path [id]
     
     ask temp [
       if item (item id global:directions) patch:obstacle > 0 [set ok? false]
-      if count persons-here  with [person:delay <= ticks and not has-arrived?] > 0 [
+      if count persons-here  with [person:delay <= ticks and not person:has-arrived?] > 0 [
         ; if people occupy the potential destination, change behavior
         set ok? false
         set patch:interaction patch:interaction + 1
@@ -48,7 +48,7 @@ to person:downhill-shortest-path [id]
        if is-patch? temp2 [ ; if the second best exists
          ask temp2 [
            if item (item id global:directions) patch:obstacle > 0 [set ok? false]
-           if count persons-here with [person:delay <= ticks and has-arrived? = false] > 0 [
+           if count persons-here with [person:delay <= ticks and person:has-arrived? = false] > 0 [
              ;  set interaction interaction + 1
              ; why do we not increase the interactions for the second best ? -> avoid overestimation ?
              ; set tempI 1
@@ -64,14 +64,14 @@ to person:downhill-shortest-path [id]
 
       if not ok?2 [
         ; otherwise move to any neighbor if possible
-        if any? neighbors with [item (item id global:directions) patch:obstacle = 0 and persons-here with [person:delay <= ticks and has-arrived? = false] = 0] [
-          move-to one-of neighbors with [item (item id global:directions) patch:obstacle = 0 and persons-here with [person:delay <= ticks and has-arrived? = false] = 0]
+        if any? neighbors with [item (item id global:directions) patch:obstacle = 0 and persons-here with [person:delay <= ticks and person:has-arrived? = false] = 0] [
+          move-to one-of neighbors with [item (item id global:directions) patch:obstacle = 0 and persons-here with [person:delay <= ticks and person:has-arrived? = false] = 0]
         ]
       ]
     ]
     
     ; cumulated interactions
-    set count-interaction count-interaction + tempI
+    set person:count-interaction person:count-interaction + tempI
 
 end
 
@@ -140,7 +140,7 @@ to person:new-person
     set shape "person"
   ]
   set person:speed-t person:speed-max
-  set has-arrived? false
+  set person:has-arrived? false
   let temp random-float 1
   set person:path-id utils:position-in-list temp global:repartition-among-paths
   set size (world-height + world-width) / 70

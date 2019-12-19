@@ -4,6 +4,24 @@
 
 
 ;;
+; global setup
+to setup:setup
+  setup:setup-environment
+  setup:setup-agents
+end
+
+
+
+;;
+; 
+to setup:setup-globals
+  set global:repartition-among-paths [0.143 0.214 0.285 0.428 0.571 0.714 0.785 0.856 0.927 1]
+  set global:directions [0 0 0 1 1 0 0 0 1 1]
+  set global:add-obstacles-setup-type "squares"
+end
+
+
+;;
 ;
 to setup:setup-environment
   clear-all
@@ -17,11 +35,15 @@ to setup:setup-environment
    ]
    setup:import-image
 
+   ;;
+   ; optional additional obstacles (can be imported from genome)
+   setup:add-obstacles
+
 end
 
 
 ;;
-;
+; Import the configuration from a bmp raster
 to setup:import-image
   import-pcolors (word "setup/" input_image);"ligne4v8_modif3.bmp"
   ask patches [set patch:id-special 1]
@@ -70,12 +92,22 @@ to setup:import-image
 end
 
 
+
 ;;
-; 
-to setup:setup-globals
-  set global:repartition-among-paths [0.143 0.214 0.285 0.428 0.571 0.714 0.785 0.856 0.927 1]
-  set global:directions [0 0 0 1 1 0 0 0 1 1]
+;
+to setup:add-obstacles
+  
+  if global:add-obstacles-setup-type = "squares" [
+    let potential-pacthes patches with [sum patch:obstacle = 0 and sum [sum patch:obstacle] of (patches in-radius 5) = 0] 
+  ]
+    
 end
+
+
+
+
+
+
 
 
 ;;
