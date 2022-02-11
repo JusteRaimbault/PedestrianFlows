@@ -93,7 +93,7 @@ change-angle
 change-angle
 0
 90
-40.0
+25.0
 5
 1
 NIL

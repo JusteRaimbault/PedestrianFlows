@@ -485,12 +485,12 @@ SLIDER
 632
 109
 821
-144
+142
 percentage-slow-persons
 percentage-slow-persons
 0
 100
-50.0
+0.0
 1
 1
 NIL
@@ -520,7 +520,7 @@ flow-rate-of-persons
 flow-rate-of-persons
 1
 100
-8.5
+10.4
 0.1
 1
 NIL
@@ -668,7 +668,7 @@ period-between-trains
 period-between-trains
 10
 1000
-60.0
+10.0
 10
 1
 NIL
