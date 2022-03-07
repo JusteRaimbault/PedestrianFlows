@@ -56,7 +56,7 @@ BUTTON
 538
 140
 reset type 1
-ca\nreset-ticks\nclear-plot\ncreate-turtles 1 [\nsetxy min-pxcor min-pycor\nset heading 45\nset color red\npd\n]
+ca\nreset-ticks\nclear-plot\ncreate-turtles 1 [\nsetxy min-pxcor min-pycor\nset heading 45\nset color yellow\npd\n]
 NIL
 1
 T
@@ -93,7 +93,7 @@ change-angle
 change-angle
 0
 90
-25.0
+5.0
 5
 1
 NIL

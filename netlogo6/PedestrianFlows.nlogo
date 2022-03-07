@@ -281,7 +281,7 @@ path-number
 path-number
 0
 10
-4.0
+5.0
 1
 1
 NIL
@@ -466,7 +466,7 @@ SWITCH
 527
 obstacleGreen?
 obstacleGreen?
-0
+1
 1
 -1000
 
@@ -477,7 +477,7 @@ SWITCH
 565
 obstacleRed?
 obstacleRed?
-0
+1
 1
 -1000
 
@@ -490,7 +490,7 @@ percentage-slow-persons
 percentage-slow-persons
 0
 100
-0.0
+25.0
 1
 1
 NIL
@@ -520,7 +520,7 @@ flow-rate-of-persons
 flow-rate-of-persons
 1
 100
-10.4
+12.3
 0.1
 1
 NIL
@@ -668,7 +668,7 @@ period-between-trains
 period-between-trains
 10
 1000
-10.0
+60.0
 10
 1
 NIL
